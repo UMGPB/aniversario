@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menú · Aniversario UMG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .hero {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
+    color: var(--gold-500);
+    font-weight: 700;
+  }
+  .hero h1 {
+    margin: 6px 0 4px;
+    font-size: 1.9rem;
+  }
+  .hero .sede {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" />
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Elección Señorita UMG</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="eyebrow">Velada · Cena · Baile</div>
+    <h1>Control de brazaletes</h1>
+    <div class="sede">Hotel Amatique Bay · 25 de julio de 2026 · 18:00 h</div>
+  </div>
+
+  <div class="countdown-wrap">
+    <div class="countdown-block"><span class="num" id="cdDias">00</span><span class="lbl">Días</span></div>
+    <div class="countdown-block"><span class="num" id="cdHoras">00</span><span class="lbl">Horas</span></div>
+    <div class="countdown-block"><span class="num" id="cdMinutos">00</span><span class="lbl">Min</span></div>
+    <div class="countdown-block"><span class="num" id="cdSegundos">00</span><span class="lbl">Seg</span></div>
+  </div>
+  <div class="countdown-caption">Tiempo restante para el evento</div>
+
+  <!-- Las tarjetas se muestran u ocultan según el rol del usuario -->
+  <div class="menu-grid" id="menuGrid"></div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Esta página requiere sesión activa, pero todos los roles pueden entrar al menú
+  // (lo que cambia es qué tarjetas ven, no el acceso al menú en sí).
+  const sesion = requerirSesion();
+  if (sesion) {
+    pintarHeaderUsuario(sesion);
+    iniciarCountdown();
+    construirMenu(sesion.rol);
+  }
+
+  /**
+   * Construye dinámicamente las tarjetas del menú según el rol del usuario:
+   * - vendedor: solo Registro de Ventas
+   * - check-in: solo Check-in
+   * - sorteo: solo Sorteo
+   * Si en el futuro se agrega un rol "admin", se le puede dar acceso a todo.
+   */
+  function construirMenu(rol) {
+    const tiles = [
+      {
+        id: "registro",
+        href: "registro.html",
+        icon: "🎟️",
+        titulo: "Registro de Ventas",
+        desc: "Vender y registrar brazaletes",
+        roles: ["vendedor", "admin"]
+      },
+      {
+        id: "checkin",
+        href: "checkin.html",
+        icon: "✅",
+        titulo: "Check-in",
+        desc: "Confirmar ingreso de asistentes",
+        roles: ["check-in", "checkin", "admin"]
+      },
+      {
+        id: "resumen",
+        href: "resumen.html",
+        icon: "📊",
+        titulo: "Resumen",
+        desc: "Ventas, asistencia y recaudación",
+        roles: ["vendedor", "check-in", "checkin", "sorteo", "admin"]
+      },
+      {
+        id: "sorteo",
+        href: "sorteo.html",
+        icon: "🎉",
+        titulo: "Sorteo",
+        desc: "Rifa entre asistentes confirmados",
+        roles: ["sorteo", "admin"]
+      }
+    ];
+
+    const grid = document.getElementById("menuGrid");
+    grid.innerHTML = "";
+
+    tiles.forEach(t => {
+      const tieneAcceso = t.roles.includes(rol);
+      const el = document.createElement(tieneAcceso ? "a" : "div");
+      if (tieneAcceso) el.href = t.href;
+      el.className = "menu-tile" + (tieneAcceso ? "" : " disabled");
+      el.innerHTML = `
+        <div class="icon">${t.icon}</div>
+        <h3>${t.titulo}</h3>
+        <p>${tieneAcceso ? t.desc : "No tienes acceso a esta sección"}</p>
+      `;
+      grid.appendChild(el);
+    });
+  }
+</script>
+
+</body>
+</html>

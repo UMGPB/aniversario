@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Check-in · Aniversario UMG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .form-card { max-width: 540px; margin: 0 auto; }
+  .breadcrumb { max-width: 540px; margin: 0 auto 14px; }
+  .breadcrumb a { color: var(--navy-700); font-size: 0.85rem; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .buscar-row {
+    display: flex;
+    gap: 10px;
+  }
+  .buscar-row input { flex: 1; }
+
+  .resultado-box {
+    margin-top: 22px;
+    border: 1.5px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 18px;
+    display: none;
+  }
+  .resultado-box.show { display: block; }
+  .resultado-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.92rem;
+  }
+  .resultado-row:last-child { border-bottom: none; }
+  .resultado-row .lbl { color: var(--text-muted); }
+  .resultado-row .val { font-weight: 600; color: var(--navy-900); }
+
+  .ya-checkin-badge {
+    display: inline-block;
+    background: #FBEAE8;
+    color: var(--danger);
+    border: 1px solid #F1C2BC;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" />
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Check-in de asistentes</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumb"><a href="index.html">← Volver al menú</a></div>
+
+  <div class="card form-card">
+    <h2>Confirmar ingreso</h2>
+    <p style="margin-top:-8px; color: var(--text-muted); font-size: 0.88rem;">
+      Ingresa el número de brazalete del asistente para verificar y confirmar su ingreso.
+    </p>
+
+    <div id="alertaBusqueda" class="alert alert-error"></div>
+    <div id="alertaCheckin" class="alert alert-success"></div>
+
+    <div class="field">
+      <label for="brazaleteBuscar">No. de Brazalete</label>
+      <div class="buscar-row">
+        <input type="text" id="brazaleteBuscar" placeholder="Ej. 045" />
+        <button class="btn btn-primary" id="btnBuscar">Buscar</button>
+      </div>
+    </div>
+
+    <div class="resultado-box" id="resultadoBox">
+      <div class="resultado-row">
+        <span class="lbl">No. Brazalete</span>
+        <span class="val" id="resBrazalete">—</span>
+      </div>
+      <div class="resultado-row">
+        <span class="lbl">Nombre del asistente</span>
+        <span class="val" id="resNombre">—</span>
+      </div>
+      <div class="resultado-row">
+        <span class="lbl">Categoría</span>
+        <span class="val" id="resCategoria">—</span>
+      </div>
+      <div class="resultado-row">
+        <span class="lbl">Facultad</span>
+        <span class="val" id="resFacultad">—</span>
+      </div>
+
+      <div id="yaCheckinBadge" class="ya-checkin-badge" style="display:none;"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-gold" id="btnConfirmar">Confirmar check-in</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Solo el rol check-in (y admin) puede acceder
+  const sesion = requerirSesion(["check-in", "checkin", "admin"]);
+  if (sesion) pintarHeaderUsuario(sesion);
+
+  const alertaBusqueda = document.getElementById("alertaBusqueda");
+  const alertaCheckin = document.getElementById("alertaCheckin");
+  const resultadoBox = document.getElementById("resultadoBox");
+  const btnConfirmar = document.getElementById("btnConfirmar");
+  const yaCheckinBadge = document.getElementById("yaCheckinBadge");
+
+  let brazaleteActual = null;
+  let yaTieneCheckin = false;
+
+  async function buscar() {
+    alertaBusqueda.classList.remove("show");
+    alertaCheckin.classList.remove("show");
+    resultadoBox.classList.remove("show");
+
+    const numero = document.getElementById("brazaleteBuscar").value.trim();
+    if (!numero) {
+      alertaBusqueda.textContent = "Escribe un número de brazalete.";
+      alertaBusqueda.classList.add("show");
+      return;
+    }
+
+    const btnBuscar = document.getElementById("btnBuscar");
+    btnBuscar.disabled = true;
+    btnBuscar.innerHTML = '<span class="loader"></span>';
+
+    const resultado = await llamarAPI("buscarBrazalete", { numero });
+
+    btnBuscar.disabled = false;
+    btnBuscar.textContent = "Buscar";
+
+    if (!resultado.ok) {
+      alertaBusqueda.textContent = resultado.error || "No se encontró el brazalete.";
+      alertaBusqueda.classList.add("show");
+      return;
+    }
+
+    // Pintamos los datos encontrados
+    document.getElementById("resBrazalete").textContent = resultado.brazalete;
+    document.getElementById("resNombre").textContent = resultado.nombre;
+    document.getElementById("resCategoria").textContent = resultado.categoria;
+    document.getElementById("resFacultad").textContent = resultado.facultad;
+
+    brazaleteActual = resultado.brazalete;
+    yaTieneCheckin = resultado.yaTieneCheckin;
+
+    if (yaTieneCheckin) {
+      yaCheckinBadge.style.display = "inline-block";
+      yaCheckinBadge.textContent = "Ya tiene check-in registrado (" + resultado.fechaCheckin + ")";
+      btnConfirmar.disabled = true;
+    } else {
+      yaCheckinBadge.style.display = "none";
+      btnConfirmar.disabled = false;
+    }
+
+    resultadoBox.classList.add("show");
+  }
+
+  document.getElementById("btnBuscar").addEventListener("click", buscar);
+  // Permitir buscar presionando Enter en el campo de texto
+  document.getElementById("brazaleteBuscar").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); buscar(); }
+  });
+
+  btnConfirmar.addEventListener("click", async () => {
+    if (!brazaleteActual || yaTieneCheckin) return;
+
+    btnConfirmar.disabled = true;
+    btnConfirmar.innerHTML = '<span class="loader"></span> Confirmando...';
+
+    const resultado = await llamarAPI("confirmarCheckin", {
+      numero: brazaleteActual,
+      registrador: sesion.nombre
+    });
+
+    if (resultado.ok) {
+      alertaCheckin.textContent = "✅ Check-in confirmado a las " + resultado.fechaHora + ".";
+      alertaCheckin.classList.add("show");
+      resultadoBox.classList.remove("show");
+      document.getElementById("brazaleteBuscar").value = "";
+    } else {
+      alertaBusqueda.textContent = resultado.error || "No se pudo confirmar el check-in.";
+      alertaBusqueda.classList.add("show");
+      btnConfirmar.disabled = false;
+    }
+    btnConfirmar.textContent = "Confirmar check-in";
+  });
+</script>
+
+</body>
+</html>

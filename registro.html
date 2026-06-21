@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Registro de Ventas · Aniversario UMG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .form-card { max-width: 540px; margin: 0 auto; }
+  .form-card h2 { margin-top: 0; }
+  .costo-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #EFF8F2;
+    border: 1.5px solid #BCE6CE;
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .breadcrumb {
+    max-width: 540px;
+    margin: 0 auto 14px;
+  }
+  .breadcrumb a { color: var(--navy-700); font-size: 0.85rem; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" />
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Registro de Ventas</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumb"><a href="index.html">← Volver al menú</a></div>
+
+  <div class="card form-card">
+    <h2>Venta de brazalete</h2>
+    <p style="margin-top:-8px; color: var(--text-muted); font-size: 0.88rem;">
+      Completa los datos del comprador. El costo es fijo por evento.
+    </p>
+
+    <div id="alertaForm" class="alert alert-error"></div>
+    <div id="alertaFormOk" class="alert alert-success"></div>
+
+    <form id="formVenta">
+      <div class="field">
+        <label>Facultad</label>
+        <!-- La facultad viene del usuario en sesión: no es editable -->
+        <div class="field-readonly" id="facultadDisplay">—</div>
+      </div>
+
+      <div class="field">
+        <label for="categoria">Categoría</label>
+        <select id="categoria" required>
+          <option value="" disabled selected>Selecciona una opción</option>
+          <option value="Estudiante">Estudiante</option>
+          <option value="Docente">Docente</option>
+          <option value="Particular">Particular</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="brazalete">No. de Brazalete</label>
+        <input type="text" id="brazalete" placeholder="Ej. 045" required />
+      </div>
+
+      <div class="field">
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" placeholder="Nombre del comprador" required />
+      </div>
+
+      <div class="field">
+        <label>Costo</label>
+        <div class="costo-box">
+          <span class="costo-fijo">Q250.00</span>
+          <span style="font-size:0.78rem; color: var(--text-muted);">Valor fijo por brazalete</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary" id="btnRegistrar">Registrar venta</button>
+        <button type="button" class="btn btn-gold" id="btnNuevaVenta">Nueva venta</button>
+        <button type="button" class="btn btn-ghost" id="btnLimpiar">Limpiar</button>
+        <button type="button" class="btn btn-danger" id="btnSalirForm">Salir</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Solo vendedores (y admin) pueden acceder a esta página
+  const sesion = requerirSesion(["vendedor", "admin"]);
+  if (sesion) {
+    pintarHeaderUsuario(sesion);
+    document.getElementById("facultadDisplay").textContent = sesion.facultad;
+  }
+
+  const formVenta = document.getElementById("formVenta");
+  const alertaForm = document.getElementById("alertaForm");
+  const alertaFormOk = document.getElementById("alertaFormOk");
+  const btnRegistrar = document.getElementById("btnRegistrar");
+
+  function limpiarFormulario() {
+    formVenta.reset();
+    alertaForm.classList.remove("show");
+    alertaFormOk.classList.remove("show");
+    document.getElementById("brazalete").focus();
+  }
+
+  // Botón "Limpiar": vacía el formulario sin guardar nada
+  document.getElementById("btnLimpiar").addEventListener("click", limpiarFormulario);
+
+  // Botón "Nueva venta": igual que limpiar, pensado para usarse después
+  // de un registro exitoso y dejar el formulario listo para el siguiente comprador
+  document.getElementById("btnNuevaVenta").addEventListener("click", limpiarFormulario);
+
+  // Botón "Salir": cierra sesión y regresa al login
+  document.getElementById("btnSalirForm").addEventListener("click", cerrarSesion);
+
+  formVenta.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertaForm.classList.remove("show");
+    alertaFormOk.classList.remove("show");
+
+    const datos = {
+      facultad: sesion.facultad,
+      categoria: document.getElementById("categoria").value,
+      brazalete: document.getElementById("brazalete").value.trim(),
+      nombre: document.getElementById("nombre").value.trim(),
+      vendedor: sesion.nombre
+      // La fecha/hora de venta se genera en el servidor (Apps Script),
+      // no en el navegador, para evitar inconsistencias de reloj local.
+    };
+
+    if (!datos.categoria || !datos.brazalete || !datos.nombre) {
+      alertaForm.textContent = "Completa todos los campos antes de registrar.";
+      alertaForm.classList.add("show");
+      return;
+    }
+
+    btnRegistrar.disabled = true;
+    btnRegistrar.innerHTML = '<span class="loader"></span> Guardando...';
+
+    const resultado = await llamarAPI("registrarVenta", { datos });
+
+    btnRegistrar.disabled = false;
+    btnRegistrar.textContent = "Registrar venta";
+
+    if (resultado.ok) {
+      alertaFormOk.textContent = "✅ Venta registrada correctamente (" + resultado.fechaHora + ").";
+      alertaFormOk.classList.add("show");
+      // Dejamos el formulario listo para la siguiente venta, pero sin
+      // borrar el mensaje de éxito de inmediato para que el vendedor lo vea
+      formVenta.reset();
+    } else {
+      alertaForm.textContent = resultado.error || "No se pudo registrar la venta.";
+      alertaForm.classList.add("show");
+    }
+  });
+</script>
+
+</body>
+</html>

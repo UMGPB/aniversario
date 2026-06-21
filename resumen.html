@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Resumen · Aniversario UMG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .breadcrumb { margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .breadcrumb a { color: var(--navy-700); font-size: 0.85rem; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .pct-bar-bg {
+    background: #EDEFF6;
+    border-radius: 6px;
+    height: 8px;
+    width: 100%;
+    overflow: hidden;
+  }
+  .pct-bar-fill {
+    background: var(--gold-500);
+    height: 100%;
+    border-radius: 6px;
+  }
+  .estado-vacio {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" />
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Resumen general</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumb">
+    <a href="index.html">← Volver al menú</a>
+    <button class="btn btn-ghost" id="btnActualizar">↻ Actualizar</button>
+  </div>
+
+  <div class="stats-grid" id="statsGrid">
+    <!-- Se llena dinámicamente -->
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;">Desglose por categoría</h2>
+    <div id="tablaWrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th>Tickets vendidos</th>
+            <th>Check-in</th>
+            <th>% Asistencia</th>
+          </tr>
+        </thead>
+        <tbody id="tablaBody">
+          <!-- Se llena dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+    <div class="estado-vacio" id="estadoVacio" style="display:none;">
+      Aún no hay ventas registradas.
+    </div>
+  </div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Todos los roles operativos pueden ver el resumen
+  const sesion = requerirSesion(["vendedor", "check-in", "checkin", "sorteo", "admin"]);
+  if (sesion) pintarHeaderUsuario(sesion);
+
+  async function cargarResumen() {
+    const statsGrid = document.getElementById("statsGrid");
+    const tablaBody = document.getElementById("tablaBody");
+    const estadoVacio = document.getElementById("estadoVacio");
+
+    statsGrid.innerHTML = '<div class="stat-card"><span class="loader"></span></div>';
+
+    const resultado = await llamarAPI("obtenerResumen");
+
+    if (!resultado.ok) {
+      statsGrid.innerHTML = "";
+      estadoVacio.style.display = "block";
+      estadoVacio.textContent = resultado.error || "No se pudo cargar el resumen.";
+      return;
+    }
+
+    // ---- Tarjetas de estadísticas generales ----
+    statsGrid.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-value">${resultado.totalVendidos}</div>
+        <div class="stat-label">Brazaletes vendidos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${resultado.totalCheckin}</div>
+        <div class="stat-label">Check-in realizados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${resultado.porcentajeAsistencia}%</div>
+        <div class="stat-label">% de asistencia</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${formatoQuetzales(resultado.totalRecaudado)}</div>
+        <div class="stat-label">Total recaudado</div>
+      </div>
+    `;
+
+    // ---- Tabla de desglose por categoría/facultad ----
+    if (!resultado.desglose || resultado.desglose.length === 0) {
+      tablaBody.innerHTML = "";
+      estadoVacio.style.display = "block";
+      return;
+    }
+    estadoVacio.style.display = "none";
+
+    tablaBody.innerHTML = resultado.desglose.map(fila => `
+      <tr>
+        <td>${fila.categoria}</td>
+        <td>${fila.vendidos}</td>
+        <td>${fila.checkin}</td>
+        <td>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="pct-bar-bg" style="max-width:90px;">
+              <div class="pct-bar-fill" style="width:${fila.porcentaje}%;"></div>
+            </div>
+            <span>${fila.porcentaje}%</span>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  document.getElementById("btnActualizar").addEventListener("click", cargarResumen);
+  cargarResumen();
+</script>
+
+</body>
+</html>

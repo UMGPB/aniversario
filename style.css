@@ -1,0 +1,438 @@
+/* ============================================================
+   ANIVERSARIO UMG 2026 — Sistema de diseño compartido
+   Paleta: Navy institucional + acento dorado (gala/velada)
+   ============================================================ */
+
+:root {
+  /* Paleta de colores */
+  --navy-900: #0B1B3A;   /* navy profundo: header, footer */
+  --navy-700: #16285C;   /* navy medio: degradados, hover */
+  --gold-500: #C9A24B;   /* dorado: acentos, bordes activos */
+  --gold-300: #E3C97A;   /* dorado claro: hover de acentos */
+  --bg-app: #F0F2F7;     /* fondo general solicitado */
+  --bg-card: #FFFFFF;    /* tarjetas / ventanas emergentes */
+  --text-main: #000000;  /* texto negro solicitado */
+  --text-muted: #5A6178;
+  --success: #1E8E5A;
+  --danger: #C0392B;
+  --border-soft: #E1E5F0;
+
+  /* Tipografía */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Sombra de tarjeta consistente */
+  --shadow-card: 0 4px 24px rgba(11, 27, 58, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- HEADER ---------- */
+.app-header {
+  background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
+  color: white;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(11, 27, 58, 0.25);
+  position: relative;
+  z-index: 10;
+}
+
+.app-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0; /* permite que el texto trunque en vez de empujar el layout */
+}
+
+.app-header .brand img {
+  height: 48px;
+  width: 48px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 6px;
+  padding: 4px;
+  object-fit: contain;
+}
+
+.app-header .brand-text h1 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.app-header .brand-text span {
+  font-size: 0.78rem;
+  color: var(--gold-300);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.app-header .user-box {
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.app-header .user-box strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.app-header .user-box .rol-tag {
+  display: inline-block;
+  margin-top: 4px;
+  background: rgba(201, 162, 75, 0.18);
+  border: 1px solid var(--gold-500);
+  color: var(--gold-300);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.2s ease;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.18); }
+
+/* ---------- MAIN ---------- */
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+/* ---------- TARJETAS ---------- */
+.card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+  color: var(--text-main);
+}
+
+/* ---------- TIPOGRAFÍA GENERAL ---------- */
+h1, h2, h3 { font-family: var(--font-display); color: var(--navy-900); }
+p { color: var(--text-main); line-height: 1.5; }
+
+/* ---------- FORMULARIOS ---------- */
+.field { margin-bottom: 18px; }
+
+.field label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy-700);
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+
+.field input[type="text"],
+.field input[type="password"],
+.field input[type="number"],
+.field select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-soft);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  color: var(--text-main);
+  background: #FBFCFE;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--gold-500);
+  box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.18);
+}
+
+.field input:disabled {
+  background: #EFF1F6;
+  color: var(--text-muted);
+}
+
+.field-readonly {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #EFF1F6;
+  border: 1.5px solid var(--border-soft);
+  font-size: 0.95rem;
+  color: var(--navy-900);
+  font-weight: 600;
+}
+
+.costo-fijo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--success);
+  font-weight: 700;
+}
+
+/* ---------- BOTONES ---------- */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 12px 22px;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  letter-spacing: 0.2px;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--navy-900);
+  color: white;
+}
+.btn-primary:hover { background: var(--navy-700); }
+
+.btn-gold {
+  background: var(--gold-500);
+  color: var(--navy-900);
+}
+.btn-gold:hover { background: var(--gold-300); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--navy-900);
+  border: 1.5px solid var(--border-soft);
+}
+.btn-ghost:hover { border-color: var(--navy-700); background: #F4F6FB; }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1.5px solid var(--danger);
+}
+.btn-danger:hover { background: rgba(192, 57, 43, 0.08); }
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- ALERTAS / MENSAJES ---------- */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 18px;
+  display: none;
+}
+.alert.show { display: block; }
+.alert-success { background: #E7F6EE; color: var(--success); border: 1px solid #BCE6CE; }
+.alert-error { background: #FBEAE8; color: var(--danger); border: 1px solid #F1C2BC; }
+
+/* ---------- FOOTER ---------- */
+.app-footer {
+  background: var(--navy-900);
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  padding: 18px 16px;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.app-footer .signature {
+  color: var(--gold-300);
+  font-size: 0.76rem;
+}
+
+/* ---------- COUNTDOWN ---------- */
+.countdown-wrap {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 22px 0 6px;
+  flex-wrap: wrap;
+}
+.countdown-block {
+  background: var(--navy-900);
+  background: linear-gradient(160deg, var(--navy-900), var(--navy-700));
+  color: white;
+  border-radius: 10px;
+  padding: 14px 18px;
+  min-width: 78px;
+  text-align: center;
+  border: 1px solid rgba(201,162,75,0.4);
+}
+.countdown-block .num {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gold-300);
+  display: block;
+  line-height: 1;
+}
+.countdown-block .lbl {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.7);
+  display: block;
+  margin-top: 6px;
+}
+.countdown-caption {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ---------- MENÚ PRINCIPAL ---------- */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 28px;
+}
+.menu-tile {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 26px 22px;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 4px solid var(--gold-500);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.menu-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(11,27,58,0.14);
+}
+.menu-tile .icon { font-size: 1.8rem; }
+.menu-tile h3 { margin: 0; font-size: 1.05rem; color: var(--navy-900); }
+.menu-tile p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+.menu-tile.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- TABLAS (Resumen) ---------- */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  font-size: 0.9rem;
+}
+table.data-table th {
+  background: var(--navy-900);
+  color: white;
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+table.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-main);
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #F7F9FD; }
+
+/* ---------- STAT CARDS (Resumen) ---------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  border-left: 4px solid var(--gold-500);
+}
+.stat-card .stat-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--navy-900);
+  font-weight: 700;
+}
+.stat-card .stat-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 4px;
+}
+
+/* ---------- LOADER ---------- */
+.loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 640px) {
+  .app-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .header-actions { width: 100%; justify-content: flex-end; }
+  main { padding: 22px 16px 40px; }
+  .countdown-block { min-width: 64px; padding: 10px 12px; }
+  .countdown-block .num { font-size: 1.4rem; }
+}
+
+/* ---------- ACCESIBILIDAD: foco visible ---------- */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid var(--gold-500);
+  outline-offset: 2px;
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

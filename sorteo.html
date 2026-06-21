@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sorteo · Aniversario UMG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .sorteo-shell {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .sorteo-shell .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.78rem;
+    color: var(--gold-500);
+    font-weight: 700;
+  }
+  .sorteo-shell h1 { margin: 6px 0 28px; }
+
+  /* ---- Ruleta de dígitos (3 rodillos: centenas / decenas / unidades) ---- */
+  .ruleta-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 30px 0;
+  }
+  .rodillo {
+    width: 92px;
+    height: 130px;
+    background: linear-gradient(180deg, var(--navy-900), var(--navy-700));
+    border: 2px solid var(--gold-500);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(11,27,58,0.25);
+  }
+  .rodillo .franja {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rodillo .digito {
+    font-family: var(--font-display);
+    font-size: 4.2rem;
+    font-weight: 800;
+    color: var(--gold-300);
+    line-height: 1;
+  }
+  /* Brillo superior/inferior tipo "máquina tragamonedas" */
+  .rodillo::before, .rodillo::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 32px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .rodillo::before { top: 0; background: linear-gradient(180deg, rgba(11,27,58,0.9), transparent); }
+  .rodillo::after { bottom: 0; background: linear-gradient(0deg, rgba(11,27,58,0.9), transparent); }
+
+  .rodillo.girando .digito {
+    animation: girar 0.08s linear infinite;
+  }
+  @keyframes girar {
+    0% { transform: translateY(-6px); opacity: 0.6; }
+    50% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0.6; }
+  }
+  .rodillo.detenido {
+    border-color: var(--gold-300);
+    box-shadow: 0 0 0 4px rgba(201,162,75,0.25), 0 10px 30px rgba(11,27,58,0.25);
+  }
+
+  .ganador-label {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
+
+  .resultado-final {
+    display: none;
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #FBF6EA, #FFFFFF);
+    border: 1.5px solid var(--gold-500);
+  }
+  .resultado-final.show { display: block; }
+  .resultado-final .nombre-ganador {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    color: var(--navy-900);
+    margin: 8px 0 4px;
+  }
+  .resultado-final .detalle-ganador {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .contador-elegibles {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" />
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Sorteo de brazaletes</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div style="margin-bottom:14px;"><a href="index.html" style="color:var(--navy-700); font-size:0.85rem; text-decoration:none;">← Volver al menú</a></div>
+
+  <div class="card sorteo-shell">
+    <div class="eyebrow">Solo asistentes con check-in confirmado</div>
+    <h1>Gran sorteo</h1>
+
+    <div class="contador-elegibles" id="contadorElegibles">Cargando participantes...</div>
+    <div id="alertaSorteo" class="alert alert-error"></div>
+
+    <!-- Tres rodillos: centenas, decenas, unidades -->
+    <div class="ruleta-wrap">
+      <div class="rodillo" id="rodillo0"><div class="franja"><span class="digito">0</span></div></div>
+      <div class="rodillo" id="rodillo1"><div class="franja"><span class="digito">0</span></div></div>
+      <div class="rodillo" id="rodillo2"><div class="franja"><span class="digito">0</span></div></div>
+    </div>
+    <div class="ganador-label">No. de brazalete ganador</div>
+
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-gold" id="btnSortear" style="font-size:1.05rem; padding:14px 32px;">
+        🎉 Iniciar sorteo
+      </button>
+    </div>
+
+    <div class="resultado-final" id="resultadoFinal">
+      <div class="ganador-label">¡Tenemos ganador!</div>
+      <div class="nombre-ganador" id="ganadorNombre">—</div>
+      <div class="detalle-ganador" id="ganadorDetalle">—</div>
+    </div>
+  </div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Solo el rol sorteo (y admin) puede acceder
+  const sesion = requerirSesion(["sorteo", "admin"]);
+  if (sesion) pintarHeaderUsuario(sesion);
+
+  let elegibles = [];
+  const btnSortear = document.getElementById("btnSortear");
+  const contadorElegibles = document.getElementById("contadorElegibles");
+  const alertaSorteo = document.getElementById("alertaSorteo");
+  const resultadoFinal = document.getElementById("resultadoFinal");
+
+  // Cargamos la lista de brazaletes con check-in confirmado al entrar a la página
+  async function cargarElegibles() {
+    const resultado = await llamarAPI("obtenerBrazaletesConCheckin");
+    if (resultado.ok) {
+      elegibles = resultado.elegibles;
+      contadorElegibles.textContent = elegibles.length + " participante(s) con check-in confirmado";
+      btnSortear.disabled = elegibles.length === 0;
+    } else {
+      contadorElegibles.textContent = "";
+      alertaSorteo.textContent = resultado.error || "No se pudo cargar la lista de participantes.";
+      alertaSorteo.classList.add("show");
+      btnSortear.disabled = true;
+    }
+  }
+  cargarElegibles();
+
+  /**
+   * Anima un solo rodillo (dígito) mostrando números aleatorios rápidos
+   * y luego se detiene exactamente en el dígito final indicado.
+   * Se usa una Promise para poder encadenar el frenado escalonado:
+   * primero centenas, luego decenas, luego unidades.
+   */
+  function girarRodillo(idRodillo, digitoFinal, duracionMs) {
+    return new Promise((resolve) => {
+      const rodillo = document.getElementById(idRodillo);
+      const span = rodillo.querySelector(".digito");
+      rodillo.classList.add("girando");
+      rodillo.classList.remove("detenido");
+
+      const intervalo = setInterval(() => {
+        span.textContent = Math.floor(Math.random() * 10);
+      }, 60);
+
+      setTimeout(() => {
+        clearInterval(intervalo);
+        span.textContent = digitoFinal;
+        rodillo.classList.remove("girando");
+        rodillo.classList.add("detenido");
+        resolve();
+      }, duracionMs);
+    });
+  }
+
+  btnSortear.addEventListener("click", async () => {
+    if (elegibles.length === 0) return;
+
+    btnSortear.disabled = true;
+    resultadoFinal.classList.remove("show");
+    alertaSorteo.classList.remove("show");
+
+    // Elegimos al ganador entre los elegibles (azar uniforme)
+    const indiceGanador = Math.floor(Math.random() * elegibles.length);
+    const ganador = elegibles[indiceGanador];
+
+    // El número de brazalete va de 001 a 600: lo normalizamos a 3 dígitos
+    const numeroFormateado = String(ganador.brazalete).padStart(3, "0");
+    const [centenas, decenas, unidades] = numeroFormateado.split("");
+
+    // Frenado escalonado: cada rodillo gira más tiempo que el anterior,
+    // así se detienen en secuencia (izquierda → centro → derecha) y se
+    // estira el suspenso como pediste.
+    await girarRodillo("rodillo0", centenas, 1400); // centenas se detiene primero
+    await girarRodillo("rodillo1", decenas, 1400);  // luego decenas
+    await girarRodillo("rodillo2", unidades, 1600); // unidades al final, con un poco más de suspenso
+
+    // Mostrar resultado final con los datos del ganador
+    document.getElementById("ganadorNombre").textContent = ganador.nombre;
+    document.getElementById("ganadorDetalle").textContent =
+      "Brazalete N° " + numeroFormateado + " · " + ganador.categoria + " · " + ganador.facultad;
+    resultadoFinal.classList.add("show");
+
+    btnSortear.disabled = false;
+    btnSortear.textContent = "🎉 Sortear de nuevo";
+  });
+</script>
+
+</body>
+</html>

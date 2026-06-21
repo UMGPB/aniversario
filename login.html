@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Iniciar sesión · Aniversario UMG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  /* Estilos exclusivos de la pantalla de login: layout centrado tipo "portada de gala" */
+  .login-shell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(201,162,75,0.10), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(11,27,58,0.06), transparent 45%),
+      var(--bg-app);
+  }
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .login-logo {
+    height: 64px;
+    margin-bottom: 14px;
+  }
+  .login-card h1 {
+    font-size: 1.3rem;
+    margin: 0 0 2px;
+  }
+  .login-card .subt {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.3px;
+  }
+  .login-card form { text-align: left; }
+  .link-cambiar-pass {
+    margin-top: 16px;
+    text-align: center;
+  }
+  .link-cambiar-pass button {
+    background: none;
+    border: none;
+    color: var(--navy-700);
+    font-size: 0.82rem;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+
+  /* Modal de cambio de contraseña */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(11,27,58,0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: white;
+    border-radius: 14px;
+    padding: 26px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: var(--shadow-card);
+  }
+  .modal-box h3 { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<div class="login-shell">
+  <div class="login-card card">
+    <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" class="login-logo" />
+    <h1>Aniversario UMG 2026</h1>
+    <div class="subt">Elección Señorita UMG · Velada · Cena · Baile</div>
+
+    <div id="alertaLogin" class="alert alert-error"></div>
+
+    <form id="formLogin">
+      <div class="field">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input type="password" id="pass" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;" id="btnLogin">
+        Ingresar
+      </button>
+    </form>
+
+    <div class="link-cambiar-pass">
+      <button type="button" id="btnAbrirCambioPass">¿Necesitas cambiar tu contraseña?</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: cambiar contraseña -->
+<div class="modal-overlay" id="modalCambioPass">
+  <div class="modal-box">
+    <h3>Cambiar contraseña</h3>
+    <div id="alertaModal" class="alert alert-error"></div>
+    <div id="alertaModalOk" class="alert alert-success"></div>
+    <form id="formCambioPass">
+      <div class="field">
+        <label for="cpUsuario">Usuario</label>
+        <input type="text" id="cpUsuario" required />
+      </div>
+      <div class="field">
+        <label for="cpPassActual">Contraseña actual</label>
+        <input type="password" id="cpPassActual" required />
+      </div>
+      <div class="field">
+        <label for="cpPassNueva">Nueva contraseña</label>
+        <input type="password" id="cpPassNueva" required minlength="4" />
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">Guardar cambio</button>
+        <button type="button" class="btn btn-ghost" id="btnCerrarModal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Si ya hay una sesión activa, no tiene sentido mostrar el login de nuevo
+  if (obtenerSesion()) {
+    window.location.href = "index.html";
+  }
+
+  /* ---------------- LOGIN ---------------- */
+  const formLogin = document.getElementById("formLogin");
+  const alertaLogin = document.getElementById("alertaLogin");
+  const btnLogin = document.getElementById("btnLogin");
+
+  formLogin.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertaLogin.classList.remove("show");
+
+    const usuario = document.getElementById("usuario").value.trim();
+    const pass = document.getElementById("pass").value.trim();
+
+    // Feedback visual de carga mientras se consulta el backend
+    btnLogin.disabled = true;
+    btnLogin.innerHTML = '<span class="loader"></span> Verificando...';
+
+    const resultado = await llamarAPI("login", { usuario, pass });
+
+    btnLogin.disabled = false;
+    btnLogin.textContent = "Ingresar";
+
+    if (resultado.ok) {
+      // Guardamos los datos de sesión (nombre, usuario, facultad, rol)
+      guardarSesion(resultado);
+      window.location.href = "index.html";
+    } else {
+      alertaLogin.textContent = resultado.error || "No se pudo iniciar sesión.";
+      alertaLogin.classList.add("show");
+    }
+  });
+
+  /* ---------------- MODAL CAMBIO DE CONTRASEÑA ---------------- */
+  const modal = document.getElementById("modalCambioPass");
+  document.getElementById("btnAbrirCambioPass").addEventListener("click", () => {
+    modal.classList.add("show");
+  });
+  document.getElementById("btnCerrarModal").addEventListener("click", () => {
+    modal.classList.remove("show");
+  });
+
+  const formCambioPass = document.getElementById("formCambioPass");
+  const alertaModal = document.getElementById("alertaModal");
+  const alertaModalOk = document.getElementById("alertaModalOk");
+
+  formCambioPass.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertaModal.classList.remove("show");
+    alertaModalOk.classList.remove("show");
+
+    const usuario = document.getElementById("cpUsuario").value.trim();
+    const passActual = document.getElementById("cpPassActual").value.trim();
+    const passNueva = document.getElementById("cpPassNueva").value.trim();
+
+    const resultado = await llamarAPI("cambiarPassword", { usuario, passActual, passNueva });
+
+    if (resultado.ok) {
+      alertaModalOk.textContent = "Contraseña actualizada. Ya puedes iniciar sesión.";
+      alertaModalOk.classList.add("show");
+      formCambioPass.reset();
+    } else {
+      alertaModal.textContent = resultado.error || "No se pudo cambiar la contraseña.";
+      alertaModal.classList.add("show");
+    }
+  });
+</script>
+
+</body>
+</html>
