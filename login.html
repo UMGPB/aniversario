@@ -40,6 +40,23 @@
     letter-spacing: 0.3px;
   }
   .login-card form { text-align: left; }
+
+  .check-mostrar-pass {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-weight: 400;
+  }
+  .check-mostrar-pass input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: var(--gold-500);
+  }
   .link-cambiar-pass {
     margin-top: 16px;
     text-align: center;
@@ -94,7 +111,22 @@
       <div class="field">
         <label for="pass">Contraseña</label>
         <input type="password" id="pass" autocomplete="current-password" required />
+        <!-- Checkbox para alternar visibilidad de la contraseña -->
+        <label class="check-mostrar-pass">
+          <input type="checkbox" id="chkMostrarPass" />
+          Mostrar contraseña
+        </label>
       </div>
+
+      <!-- Selector de facultad: oculto por defecto. Solo se muestra si, tras validar
+           usuario/contraseña, el backend indica que el usuario tiene más de una facultad. -->
+      <div class="field" id="campoFacultad" style="display:none;">
+        <label for="facultadSelect">Facultad</label>
+        <select id="facultadSelect">
+          <option value="" disabled selected>Selecciona tu facultad</option>
+        </select>
+      </div>
+
       <button type="submit" class="btn btn-primary" style="width:100%;" id="btnLogin">
         Ingresar
       </button>
@@ -145,36 +177,85 @@
     window.location.href = "index.html";
   }
 
-  /* ---------------- LOGIN ---------------- */
+  /* ---------------- MOSTRAR / OCULTAR CONTRASEÑA ---------------- */
+  const inputPass = document.getElementById("pass");
+  document.getElementById("chkMostrarPass").addEventListener("change", (e) => {
+    inputPass.type = e.target.checked ? "text" : "password";
+  });
+
+  /* ---------------- LOGIN (flujo en dos pasos) ---------------- */
   const formLogin = document.getElementById("formLogin");
   const alertaLogin = document.getElementById("alertaLogin");
   const btnLogin = document.getElementById("btnLogin");
+  const campoFacultad = document.getElementById("campoFacultad");
+  const facultadSelect = document.getElementById("facultadSelect");
+
+  // Guarda los datos validados (nombre, usuario, rol) mientras se espera
+  // a que el usuario elija facultad, en caso de que tenga más de una.
+  let datosLoginPendiente = null;
 
   formLogin.addEventListener("submit", async (e) => {
     e.preventDefault();
     alertaLogin.classList.remove("show");
 
+    // Paso 2: si el selector de facultad ya está visible, lo que hacemos
+    // aquí es completar el login con la facultad elegida, sin volver a
+    // llamar al backend (las credenciales ya fueron validadas en el paso 1).
+    if (campoFacultad.style.display !== "none") {
+      const facultadElegida = facultadSelect.value;
+      if (!facultadElegida) {
+        alertaLogin.textContent = "Selecciona tu facultad para continuar.";
+        alertaLogin.classList.add("show");
+        return;
+      }
+      const sesionFinal = { ...datosLoginPendiente, facultad: facultadElegida };
+      guardarSesion(sesionFinal);
+      window.location.href = "index.html";
+      return;
+    }
+
+    // Paso 1: validar usuario y contraseña contra el backend
     const usuario = document.getElementById("usuario").value.trim();
     const pass = document.getElementById("pass").value.trim();
 
-    // Feedback visual de carga mientras se consulta el backend
     btnLogin.disabled = true;
     btnLogin.innerHTML = '<span class="loader"></span> Verificando...';
 
     const resultado = await llamarAPI("login", { usuario, pass });
 
     btnLogin.disabled = false;
-    btnLogin.textContent = "Ingresar";
 
-    if (resultado.ok) {
-      // Guardamos los datos de sesión (nombre, usuario, facultad, rol)
-      guardarSesion(resultado);
-      window.location.href = "index.html";
-    } else {
+    if (!resultado.ok) {
+      btnLogin.textContent = "Ingresar";
       alertaLogin.textContent = resultado.error || "No se pudo iniciar sesión.";
       alertaLogin.classList.add("show");
+      return;
     }
+
+    const facultades = resultado.facultades || [];
+
+    if (facultades.length <= 1) {
+      // Una sola facultad (o ninguna, ej. un futuro admin sin facultad fija):
+      // se asigna automáticamente y se entra directo, sin mostrar el selector.
+      guardarSesion({ ...resultado, facultad: facultades[0] || "" });
+      window.location.href = "index.html";
+      return;
+    }
+
+    // Más de una facultad: mostramos el selector y guardamos los datos
+    // validados para completarlos cuando el usuario elija y vuelva a enviar.
+    datosLoginPendiente = resultado;
+    facultadSelect.innerHTML = '<option value="" disabled selected>Selecciona tu facultad</option>' +
+      facultades.map(f => `<option value="${f}">${f}</option>`).join("");
+    campoFacultad.style.display = "block";
+
+    // Bloqueamos usuario/contraseña para evitar que se reediten en este punto
+    document.getElementById("usuario").disabled = true;
+    inputPass.disabled = true;
+
+    btnLogin.textContent = "Continuar";
   });
+
 
   /* ---------------- MODAL CAMBIO DE CONTRASEÑA ---------------- */
   const modal = document.getElementById("modalCambioPass");
