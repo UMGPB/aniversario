@@ -84,7 +84,7 @@
     <div class="field">
       <label for="brazaleteBuscar">No. de Brazalete</label>
       <div class="buscar-row">
-        <input type="text" id="brazaleteBuscar" placeholder="Ej. 045" />
+        <input type="text" id="brazaleteBuscar" placeholder="Ej. 045" maxlength="3" inputmode="numeric" />
         <button class="btn btn-primary" id="btnBuscar">Buscar</button>
       </div>
     </div>
@@ -110,7 +110,7 @@
       <div id="yaCheckinBadge" class="ya-checkin-badge" style="display:none;"></div>
 
       <div class="btn-row">
-        <button class="btn btn-gold" id="btnConfirmar">Confirmar check-in</button>
+        <button class="btn btn-gold" id="btnConfirmar">✅ Confirmar check-in</button>
       </div>
     </div>
   </div>
@@ -211,7 +211,7 @@
       alertaBusqueda.classList.add("show");
       btnConfirmar.disabled = false;
     }
-    btnConfirmar.textContent = "Confirmar check-in";
+    btnConfirmar.innerHTML = "✅ Confirmar check-in";
   });
 </script>
 

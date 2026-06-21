@@ -77,7 +77,8 @@
 
       <div class="field">
         <label for="brazalete">No. de Brazalete</label>
-        <input type="text" id="brazalete" placeholder="Ej. 045" required />
+        <input type="text" id="brazalete" placeholder="Ej. 045" maxlength="3" inputmode="numeric" required />
+        <span style="font-size:0.76rem; color: var(--text-muted);">Se guardará con formato de 3 dígitos (ej. 001, 025, 060)</span>
       </div>
 
       <div class="field">
@@ -94,9 +95,8 @@
       </div>
 
       <div class="btn-row">
-        <button type="submit" class="btn btn-primary" id="btnRegistrar">Registrar venta</button>
-        <button type="button" class="btn btn-gold" id="btnNuevaVenta">Nueva venta</button>
-        <button type="button" class="btn btn-ghost" id="btnLimpiar">Limpiar</button>
+        <button type="submit" class="btn btn-primary" id="btnRegistrar">✅ Registrar Venta</button>
+        <button type="button" class="btn btn-ghost" id="btnLimpiar">🔄 Limpiar</button>
         <button type="button" class="btn btn-danger" id="btnSalirForm">Salir</button>
       </div>
     </form>
@@ -132,10 +132,6 @@
   // Botón "Limpiar": vacía el formulario sin guardar nada
   document.getElementById("btnLimpiar").addEventListener("click", limpiarFormulario);
 
-  // Botón "Nueva venta": igual que limpiar, pensado para usarse después
-  // de un registro exitoso y dejar el formulario listo para el siguiente comprador
-  document.getElementById("btnNuevaVenta").addEventListener("click", limpiarFormulario);
-
   // Botón "Salir": cierra sesión y regresa al login
   document.getElementById("btnSalirForm").addEventListener("click", cerrarSesion);
 
@@ -152,6 +148,8 @@
       vendedor: sesion.nombre
       // La fecha/hora de venta se genera en el servidor (Apps Script),
       // no en el navegador, para evitar inconsistencias de reloj local.
+      // El número de brazalete también se normaliza en el servidor a
+      // formato de 3 dígitos (###), así que aquí se envía tal cual se escribió.
     };
 
     if (!datos.categoria || !datos.brazalete || !datos.nombre) {
@@ -166,7 +164,7 @@
     const resultado = await llamarAPI("registrarVenta", { datos });
 
     btnRegistrar.disabled = false;
-    btnRegistrar.textContent = "Registrar venta";
+    btnRegistrar.innerHTML = "✅ Registrar Venta";
 
     if (resultado.ok) {
       alertaFormOk.textContent = "✅ Venta registrada correctamente (" + resultado.fechaHora + ").";
