@@ -3,7 +3,7 @@
    Conexión con el backend de Google Apps Script + manejo de sesión
    ============================================================ */
 
-// ⚠️ IMPORTANTE: reemplaza esta URL por la de tu Web App publicado
+// ⚠️ IMPORTANTE: si hay algun inconveniente o error hay que recordar reemplazar esta URL por la de la Web App publicado
 // (Apps Script → Implementar → Nueva implementación → Aplicación web)
 const API_URL = "https://script.google.com/macros/s/AKfycbwR_UmTuLyidlCNzrrv78jP70rxIOczfe7rpd5NceQHVvpuShO6hWkqJ9PPguACS2eg2A/exec";
 
@@ -84,8 +84,9 @@ function formatoQuetzales(valor) {
 }
 
 /* ---------------- COUNTDOWN AL EVENTO ---------------- */
-// El evento es el 25 de julio de 2026 a las 18:00 hrs (hora local de Guatemala)
-const FECHA_EVENTO = new Date("2026-07-25T18:00:00-06:00");
+// El evento es el 01 de agosto de 2026 a las 18:00 hrs (hora local de Guatemala)
+const FECHA_EVENTO = new Date("2026-08-01T18:00:00-06:00");
+//El formato es: AAAA-MM-DDTHH:MM:SS-06:00, la parte -06:00 es la zona horaria de Guatemala, no debe cambiarse.
 
 function iniciarCountdown() {
   const elDias = document.getElementById("cdDias");
