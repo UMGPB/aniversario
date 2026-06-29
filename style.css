@@ -1,6 +1,7 @@
 /* ============================================================
    ANIVERSARIO UMG 2026 — Sistema de diseño compartido
    Paleta: Navy institucional + acento dorado (gala/velada)
+   este es el css que contiene la paleta de colores a utilizar
    ============================================================ */
 
 :root {
@@ -9,13 +10,13 @@
   --navy-700: #16285C;   /* navy medio: degradados, hover */
   --gold-500: #C9A24B;   /* dorado: acentos, bordes activos */
   --gold-300: #E3C97A;   /* dorado claro: hover de acentos */
-  --bg-app: #F0F2F7;     /* fondo general solicitado */
-  --bg-card: #FFFFFF;    /* tarjetas / ventanas emergentes */
-  --text-main: #000000;  /* texto negro solicitado */
-  --text-muted: #5A6178;
-  --success: #1E8E5A;
-  --danger: #C0392B;
-  --border-soft: #E1E5F0;
+  --bg-app: #F0F2F7;     /* fondo general claro para todas las páginas */
+  --bg-card: #FFFFFF;    /* color para las tarjetas / ventanas emergentes */
+  --text-main: #000000;  /* texto negro para las páginas */
+  --text-muted: #5A6178; /* color de un texto a un tono azul atenuado para indicar textos secundarios */
+  --success: #1E8E5A;  /* variable que contiene color verde esperalda */
+  --danger: #C0392B; /* Variable para indicar peligro, botones de eliminación, errores o alertas */
+  --border-soft: #E1E5F0; /* Variable para borde suave color azul claro */
 
   /* Tipografía */
   --font-display: 'Playfair Display', Georgia, serif;
@@ -72,6 +73,7 @@ body {
   font-size: 1.25rem;
   margin: 0;
   letter-spacing: 0.3px;
+  color: white; /* todos los h1 heredan el color navy-900 declarados al inicio pero lo force a que fuera blanco para que se pueda leer en el headder */
 }
 
 .app-header .brand-text span {
