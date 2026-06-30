@@ -85,8 +85,8 @@ function formatoQuetzales(valor) {
 
 /* ---------------- COUNTDOWN AL EVENTO ---------------- */
 // El evento es el 01 de agosto de 2026 a las 18:00 hrs (hora local de Guatemala)
-const FECHA_EVENTO = new Date("2026-08-01T18:00:00");
-//El formato es: AAAA-MM-DDTHH:MM:SS-06:00, la parte -06:00 es la zona horaria de Guatemala, no debe cambiarse.
+const FECHA_EVENTO = new Date("2026-06-30T10:00:00");
+//El formato es: AAAA-MM-DDTHH:MM:SS-06:00, la parte -06:00 es la zona horaria de Guatemala, pero no se incluye porque crea conflicto.
 
 function iniciarCountdown() {
   const elDias = document.getElementById("cdDias");
