@@ -27,14 +27,78 @@
     color: var(--text-muted);
     font-size: 0.92rem;
   }
+ /* 💡📍⌛Countdown horizontal estilo barra: FALTAN [días] : [hrs] : [min] : [seg] */
+  .countdown-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
+    border: 1px solid rgba(201,162,75,0.35);
+    border-radius: 50px;
+    padding: 14px 30px;
+    margin: 22px auto 10px;
+    max-width: 560px;
+    flex-wrap: wrap;
+  }
+  .cd-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .cd-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 52px;
+  }
+  .cd-num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--gold-300);
+    line-height: 1;
+  }
+  .cd-sub {
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .cd-sep {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    line-height: 1;
+    margin-bottom: 12px; /* compensa el cd-sub para que el : quede centrado con los números */
+  }
+  @media (max-width: 480px) {
+    .countdown-bar { padding: 12px 18px; gap: 8px; border-radius: 16px; }
+    .cd-num { font-size: 1.5rem; }
+    .cd-label { width: 100%; text-align: center; margin-right: 0; }
+  }
+ 
+  /* Mensaje que reemplaza la barra de números cuando llega la fecha/hora del evento */
+  .cd-evento-iniciado {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold-300);
+    padding: 6px 10px;
+  }
+  
 </style>
 </head>
 <body>
 
 <header class="app-header">
   <div class="brand">
-    <img src="https://i.ibb.co/YTpxn02d/LOGO-55-A-OS-UMG-PUERTO-BARRIOS-jpg.jpg" alt="Logo UMG 55 a sf" /> <!--fondo blanco -->
-    <!--<img src="https://i.ibb.co/s9t1xfwh/LOGO-55-A-OS-UMG-PUERTO-BARRIOS-SIN-FONDO.png" alt="Logo UMG 55 a" /> sin fondo blanco-->
+    <!--<img src="https://i.ibb.co/YTpxn02d/LOGO-55-A-OS-UMG-PUERTO-BARRIOS-jpg.jpg" alt="Logo UMG 55 a sf" /> <!--fondo blanco --> -->
+    <img src="https://i.ibb.co/s9t1xfwh/LOGO-55-A-OS-UMG-PUERTO-BARRIOS-SIN-FONDO.png" style="background:transparent;" alt="Logo UMG 55 a" /> <!--sin fondo blanco-->
     <!-- <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" /> logo umg-->
     <div class="brand-text">
       <h1>Aniversario UMG 2026</h1>
@@ -53,8 +117,9 @@
 <main>
   <div class="hero">
     <div class="eyebrow">Velada · Cena · Baile</div>
-    <h1>Control de brazaletes</h1>
-    <div class="sede">📍 Hotel Amatique Bay · 01 de Agosto de 2026 · 18:00 h</div>
+    <h1>Aniversario UMG 2026</h1>
+    <h2>Control de brazaletes</h2>
+    <div class="sede">📍 Hotel Amatique Bay · 📆 01 de Agosto de 2026 · 🕕 18:00 h</div>
   </div>
  <div class="countdown-caption">Tiempo restante para el evento</div>
   
