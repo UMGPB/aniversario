@@ -125,11 +125,28 @@
   </div>
  <div class="countdown-caption">Tiempo restante para el evento</div>
   
-  <div class="countdown-wrap">
-    <div class="countdown-block"><span class="num" id="cdDias">00</span><span class="lbl">Días</span></div>
-    <div class="countdown-block"><span class="num" id="cdHoras">00</span><span class="lbl">Horas</span></div>
-    <div class="countdown-block"><span class="num" id="cdMinutos">00</span><span class="lbl">Min</span></div>
-    <div class="countdown-block"><span class="num" id="cdSegundos">00</span><span class="lbl">Seg</span></div>
+  <!-- Countdown estilo horizontal: FALTAN [días] : [hrs] : [min] : [seg] -->
+  <div class="countdown-bar">
+    <span class="cd-label">FALTAN</span>
+    <div class="cd-unit">
+      <span class="cd-num" id="cdDias">00</span>
+      <span class="cd-sub">DÍAS</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit">
+      <span class="cd-num" id="cdHoras">00</span>
+      <span class="cd-sub">HRS</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit">
+      <span class="cd-num" id="cdMinutos">00</span>
+      <span class="cd-sub">MIN</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit">
+      <span class="cd-num" id="cdSegundos">00</span>
+      <span class="cd-sub">SEG</span>
+    </div>
   </div>
  
 
@@ -204,6 +221,7 @@
       const el = document.createElement(tieneAcceso ? "a" : "div");
       if (tieneAcceso) el.href = t.href;
       el.className = "menu-tile" + (tieneAcceso ? "" : " disabled");
+      el.style.textAlign = "center";
       el.innerHTML = `
         <div class="icon">${t.icon}</div>
         <h3>${t.titulo}</h3>
