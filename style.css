@@ -440,3 +440,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- MENSAJE EVENTO INICIADO (countdown) ---------- */
+/* Se aplica cuando el countdown llega a cero y reemplaza los números por el mensaje.
+   Funciona tanto con .countdown-bar (versión nueva) como con .countdown-wrap (versión anterior). */
+.cd-evento-iniciado {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold-300);
+  padding: 6px 10px;
+  text-align: center;
+}
