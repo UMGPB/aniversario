@@ -90,7 +90,7 @@ function formatoQuetzales(valor) {
 /* Se puede usar UTC equivalente: 18:00 GMT-6 = 00:00 del día siguiente en UTC. 
      Esto evita que distintos navegadores interpreten la zona horaria de forma
      diferente y muestren horas incorrectas (como el "00 HRS" que se veía antes). */
-const FECHA_EVENTO = new Date("2026-07-02T00:00:00Z"); // ✅ equivale a 01-ago-2026 18:00 GMT-6
+const FECHA_EVENTO = new Date("2026-08-02T00:00:00Z"); // ✅ equivale a 01-ago-2026 18:00 GMT-6
 // El evento es el 25 de julio de 2026 a las 18:00 hrs (hora local de Guatemala) - version anterior
 //const FECHA_EVENTO = new Date("2026-07-25T18:00:00-06:00");
 
