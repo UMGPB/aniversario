@@ -28,6 +28,29 @@
   }
   .breadcrumb a { color: var(--navy-700); font-size: 0.85rem; text-decoration: none; }
   .breadcrumb a:hover { text-decoration: underline; }
+
+  /* Separador visual entre sección de registro y sección de edición */
+  .seccion-edicion {
+    max-width: 540px;
+    margin: 28px auto 0;
+    border-top: 2px dashed var(--border-soft);
+    padding-top: 24px;
+  }
+  .seccion-edicion h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: var(--navy-700);
+  }
+  .buscar-row {
+    display: flex;
+    gap: 10px;
+  }
+  .buscar-row input { flex: 1; }
+  /* Resalta visualmente que el formulario está en modo edición */
+  .modo-edicion {
+    border: 2px solid var(--gold-500) !important;
+    box-shadow: 0 0 0 3px rgba(201,162,75,0.15) !important;
+  }
 </style>
 </head>
 <body>
@@ -107,6 +130,57 @@
   </div>
 </main>
 
+  <!-- ══════════════════════════════════════════════════════
+       SECCIÓN DE EDICIÓN — buscar un registro y corregirlo
+       Vendedor: solo edita sus propios registros
+       Admin: puede editar cualquier registro
+       ══════════════════════════════════════════════════════ -->
+  <div class="seccion-edicion">
+    <h3>✏️ Corregir un registro</h3>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-8px;">
+      Busca el brazalete que deseas corregir e ingresa los nuevos datos.
+    </p>
+
+    <div id="alertaEdicion" class="alert alert-error"></div>
+    <div id="alertaEdicionOk" class="alert alert-success"></div>
+
+    <!-- Campo de búsqueda por número de brazalete -->
+    <div class="field">
+      <label for="buscarBrazalete">Buscar por No. de Brazalete</label>
+      <div class="buscar-row">
+        <input type="text" id="buscarBrazalete" placeholder="Ej. 045" maxlength="3" inputmode="numeric" />
+        <button class="btn btn-ghost" id="btnBuscarEdicion">🔍 Buscar</button>
+      </div>
+    </div>
+
+    <!-- Formulario de edición: oculto hasta que se encuentre un registro -->
+    <div id="formEdicionWrap" style="display:none;">
+      <div class="field">
+        <label for="editCategoria">Categoría</label>
+        <select id="editCategoria">
+          <option value="Estudiante">Estudiante</option>
+          <option value="Docente">Docente</option>
+          <option value="Particular">Particular</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="editBrazalete">No. de Brazalete</label>
+        <input type="text" id="editBrazalete" maxlength="3" inputmode="numeric" />
+        <span style="font-size:0.76rem; color:var(--text-muted);">Se guardará con formato de 3 dígitos (ej. 001, 025, 060)</span>
+      </div>
+      <div class="field">
+        <label for="editNombre">Nombre completo</label>
+        <input type="text" id="editNombre" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="btnGuardarEdicion">💾 Guardar cambios</button>
+        <button class="btn btn-ghost" id="btnCancelarEdicion">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
 <footer class="app-footer">
   · Universidad Mariano Gálvez · Puerto Barrios, Izabal
   <div class="signature">© M.A. Inga. Delmy Valiente</div>
@@ -179,6 +253,124 @@
     } else {
       alertaForm.textContent = resultado.error || "No se pudo registrar la venta.";
       alertaForm.classList.add("show");
+    }
+  });
+  /* ══════════════════════════════════════════════════
+     LÓGICA DE EDICIÓN
+     ══════════════════════════════════════════════════ */
+  const alertaEdicion   = document.getElementById("alertaEdicion");
+  const alertaEdicionOk = document.getElementById("alertaEdicionOk");
+  const formEdicionWrap = document.getElementById("formEdicionWrap");
+  let brazaleteOriginal = null; // guarda el número original para saber qué fila editar
+
+  // Función para limpiar alertas de edición
+  function limpiarAlertasEdicion() {
+    alertaEdicion.classList.remove("show");
+    alertaEdicionOk.classList.remove("show");
+  }
+
+  // Botón "Buscar": localiza el registro por número de brazalete
+  // y carga los datos en el formulario de edición.
+  document.getElementById("btnBuscarEdicion").addEventListener("click", async () => {
+    limpiarAlertasEdicion();
+    formEdicionWrap.style.display = "none";
+    brazaleteOriginal = null;
+
+    const numeroBuscado = document.getElementById("buscarBrazalete").value.trim();
+    if (!numeroBuscado) {
+      alertaEdicion.textContent = "Ingresa el número de brazalete a buscar.";
+      alertaEdicion.classList.add("show");
+      return;
+    }
+
+    const btnBuscar = document.getElementById("btnBuscarEdicion");
+    btnBuscar.disabled = true;
+    btnBuscar.innerHTML = '<span class="loader"></span>';
+
+    // Reutilizamos buscarBrazalete del módulo de check-in para obtener los datos
+    const resultado = await llamarAPI("buscarBrazalete", { numero: numeroBuscado });
+
+    btnBuscar.disabled = false;
+    btnBuscar.textContent = "🔍 Buscar";
+
+    if (!resultado.ok) {
+      alertaEdicion.textContent = resultado.error || "No se encontró el brazalete.";
+      alertaEdicion.classList.add("show");
+      return;
+    }
+
+    // Cargar los datos encontrados en el formulario de edición
+    brazaleteOriginal = resultado.brazalete;
+    document.getElementById("editCategoria").value = resultado.categoria;
+    document.getElementById("editBrazalete").value = resultado.brazalete;
+    document.getElementById("editNombre").value     = resultado.nombre;
+
+    // Resaltar visualmente el formulario en modo edición
+    formEdicionWrap.style.display = "block";
+    formEdicionWrap.classList.add("modo-edicion");
+    formEdicionWrap.style.borderRadius = "10px";
+    formEdicionWrap.style.padding = "16px";
+  });
+
+  // Botón "Guardar cambios": envía los datos corregidos al backend.
+  // El backend valida que el vendedor solo edite sus propios registros.
+  document.getElementById("btnGuardarEdicion").addEventListener("click", async () => {
+    limpiarAlertasEdicion();
+
+    const nuevoNumero   = document.getElementById("editBrazalete").value.trim();
+    const nuevoNombre   = document.getElementById("editNombre").value.trim();
+    const nuevaCategoria = document.getElementById("editCategoria").value;
+
+    if (!nuevoNumero || !nuevoNombre || !nuevaCategoria) {
+      alertaEdicion.textContent = "Completa todos los campos antes de guardar.";
+      alertaEdicion.classList.add("show");
+      return;
+    }
+
+    const btnGuardar = document.getElementById("btnGuardarEdicion");
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<span class="loader"></span> Guardando...';
+
+    const resultado = await llamarAPI("editarVenta", {
+      datos: {
+        brazaleteOriginal: brazaleteOriginal, // número original para localizar la fila
+        brazaleteNuevo:    nuevoNumero,
+        nombre:            nuevoNombre,
+        categoria:         nuevaCategoria
+      },
+      vendedor: sesion.nombre,
+      esAdmin:  sesion.rol === "admin" // admin puede editar cualquier registro
+    });
+
+    btnGuardar.disabled = false;
+    btnGuardar.innerHTML = "💾 Guardar cambios";
+
+    if (resultado.ok) {
+      alertaEdicionOk.textContent = "✅ " + resultado.mensaje;
+      alertaEdicionOk.classList.add("show");
+      // Actualizar el número original en caso de que haya cambiado,
+      // para que un segundo guardado en la misma sesión funcione correctamente
+      brazaleteOriginal = nuevoNumero.padStart(3, "0");
+    } else {
+      alertaEdicion.textContent = resultado.error || "No se pudo actualizar el registro.";
+      alertaEdicion.classList.add("show");
+    }
+  });
+
+  // Botón "Cancelar": oculta el formulario de edición y limpia la búsqueda
+  document.getElementById("btnCancelarEdicion").addEventListener("click", () => {
+    formEdicionWrap.style.display = "none";
+    formEdicionWrap.classList.remove("modo-edicion");
+    document.getElementById("buscarBrazalete").value = "";
+    brazaleteOriginal = null;
+    limpiarAlertasEdicion();
+  });
+
+  // Permitir buscar presionando Enter en el campo de búsqueda
+  document.getElementById("buscarBrazalete").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById("btnBuscarEdicion").click();
     }
   });
 </script>
