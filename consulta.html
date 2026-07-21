@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Consulta · Aniversario UMG 2026</title>
+<!-- Icono de la pestaña -->
+<link rel="icon" type="image/png" href="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  /* ---- Controles superiores (filtro + botones) ---- */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .toolbar input[type="text"] {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-soft);
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    width: 240px;
+  }
+  .toolbar input[type="text"]:focus {
+    outline: none;
+    border-color: var(--gold-500);
+    box-shadow: 0 0 0 3px rgba(201,162,75,0.18);
+  }
+
+  /* ---- Tabla con scroll horizontal en móvil ---- */
+  .tabla-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border-soft);
+  }
+  table.data-table th { white-space: nowrap; }
+  table.data-table td { white-space: nowrap; }
+
+  /* Badge check-in: verde si tiene, gris si no */
+  .badge-si {
+    display: inline-block;
+    background: #E7F6EE;
+    color: var(--success);
+    border: 1px solid #BCE6CE;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-no {
+    display: inline-block;
+    background: #F3F4F8;
+    color: var(--text-muted);
+    border: 1px solid var(--border-soft);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+  }
+
+  /* Fila de totales al pie de la tabla */
+  .fila-total td {
+    font-weight: 700;
+    background: #F0F2F7 !important;
+    color: var(--navy-900) !important;
+    border-top: 2px solid var(--border-soft);
+  }
+
+  /* Estado vacío / cargando */
+  .estado-tabla {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* ════════════════════════════════════
+     ESTILOS SOLO PARA IMPRESIÓN PDF
+     Oculta header, footer, breadcrumb,
+     toolbar y muestra solo la tabla.
+     ════════════════════════════════════ */
+  @media print {
+    .app-header, .app-footer, .breadcrumb,
+    .toolbar, #btnImprimir, #btnActualizar { display: none !important; }
+    body { background: white; }
+    main { padding: 0; max-width: 100%; }
+    .card { box-shadow: none; border: none; padding: 0; }
+    .tabla-wrap { border: none; overflow: visible; }
+    /* Encabezado de impresión con nombre del usuario y fecha */
+    .print-header { display: block !important; }
+    table.data-table { font-size: 0.78rem; }
+    table.data-table th, table.data-table td { padding: 7px 10px; }
+  }
+  /* Oculto en pantalla, visible solo al imprimir */
+  .print-header {
+    display: none;
+    margin-bottom: 16px;
+    font-family: var(--font-body);
+  }
+  .print-header h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  .print-header p  { margin: 0; font-size: 0.8rem; color: #555; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img src="https://i.ibb.co/gZzdHfR0/55-a-os-UMG-pb-sticker.png"
+         style="height:60px;width:auto;background:transparent;" alt="Logo UMGPB 55a" />
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Consulta de brazaletes</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumb" style="margin-bottom:14px;">
+    <a href="index.html" style="color:var(--navy-700); font-size:0.85rem; text-decoration:none;">← Volver al menú</a>
+  </div>
+
+  <div class="card">
+
+    <!-- Encabezado visible solo al imprimir -->
+    <div class="print-header">
+      <h2>Aniversario UMG 2026 · Consulta de brazaletes vendidos</h2>
+      <p id="printSubtitle"></p>
+    </div>
+
+    <!-- Barra de herramientas: filtro de búsqueda + botones -->
+    <div class="toolbar">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <input type="text" id="filtro" placeholder="🔍 Filtrar por nombre, brazalete..." />
+        <span id="contadorVisible" style="font-size:0.82rem; color:var(--text-muted);"></span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" id="btnActualizar">↻ Actualizar</button>
+        <button class="btn btn-primary" id="btnImprimir">🖨️ Imprimir / PDF</button>
+      </div>
+    </div>
+
+    <div id="alertaConsulta" class="alert alert-error"></div>
+
+    <!-- Tabla de registros -->
+    <div class="tabla-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Facultad</th>
+            <th>Categoría</th>
+            <th>No. Brazalete</th>
+            <th>Nombre completo</th>
+            <th>Costo</th>
+            <th>Fecha/Hora Venta</th>
+            <th>Vendedor</th>
+            <th>Check-in</th>
+            <th>Fecha/Hora Check-in</th>
+            <th>Registrador Check-in</th>
+          </tr>
+        </thead>
+        <tbody id="tablaBody">
+          <tr><td colspan="11" class="estado-tabla">Cargando registros...</td></tr>
+        </tbody>
+        <tfoot id="tablaFoot"></tfoot>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Todos los roles operativos pueden consultar (cada quien ve lo que le corresponde)
+  const sesion = requerirSesion(["vendedor", "check-in", "checkin", "sorteo", "admin"]);
+  if (sesion) pintarHeaderUsuario(sesion);
+
+  const esAdmin = sesion && sesion.rol === "admin";
+
+  // Arreglo completo de registros devueltos por el backend.
+  // Se filtra localmente para no hacer una llamada extra al servidor por cada búsqueda.
+  let todosLosRegistros = [];
+
+  /* ---- Cargar registros desde el backend ---- */
+  async function cargarRegistros() {
+    const tablaBody = document.getElementById("tablaBody");
+    const tablaFoot = document.getElementById("tablaFoot");
+    const alerta    = document.getElementById("alertaConsulta");
+    alerta.classList.remove("show");
+    tablaBody.innerHTML = '<tr><td colspan="11" class="estado-tabla"><span class="loader" style="border-top-color:var(--navy-700);"></span> Cargando...</td></tr>';
+    tablaFoot.innerHTML = "";
+
+    const resultado = await llamarAPI("obtenerRegistros", {
+      vendedor: sesion.nombre,
+      esAdmin:  esAdmin
+    });
+
+    if (!resultado.ok) {
+      tablaBody.innerHTML = '<tr><td colspan="11" class="estado-tabla">No se pudieron cargar los registros.</td></tr>';
+      alerta.textContent = resultado.error || "Error al cargar los datos.";
+      alerta.classList.add("show");
+      return;
+    }
+
+    todosLosRegistros = resultado.registros;
+    renderizarTabla(todosLosRegistros);
+  }
+
+  /* ---- Renderizar filas en la tabla ---- */
+  function renderizarTabla(registros) {
+    const tablaBody = document.getElementById("tablaBody");
+    const tablaFoot = document.getElementById("tablaFoot");
+    const contador  = document.getElementById("contadorVisible");
+
+    if (registros.length === 0) {
+      tablaBody.innerHTML = '<tr><td colspan="11" class="estado-tabla">No hay registros para mostrar.</td></tr>';
+      tablaFoot.innerHTML = "";
+      contador.textContent = "0 registros";
+      return;
+    }
+
+    // Calcular total recaudado de los registros visibles
+    let totalCosto = 0;
+
+    tablaBody.innerHTML = registros.map((r, idx) => {
+      totalCosto += r.costo;
+      const brazalete = String(r.brazalete).padStart(3, "0");
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${r.facultad || '—'}</td>
+          <td>${r.categoria || '—'}</td>
+          <td><strong>${brazalete}</strong></td>
+          <td>${r.nombre || '—'}</td>
+          <td>${formatoQuetzales(r.costo)}</td>
+          <td>${r.fechaVenta}</td>
+          <td>${r.vendedor || '—'}</td>
+          <td><span class="${r.checkin === 'Sí' ? 'badge-si' : 'badge-no'}">${r.checkin}</span></td>
+          <td>${r.fechaCheckin}</td>
+          <td>${r.registradorCheckin}</td>
+        </tr>`;
+    }).join("");
+
+    // Fila de totales al pie
+    tablaFoot.innerHTML = `
+      <tr class="fila-total">
+        <td colspan="4" style="text-align:right;">Total recaudado:</td>
+        <td></td>
+        <td><strong>${formatoQuetzales(totalCosto)}</strong></td>
+        <td colspan="5"></td>
+      </tr>`;
+
+    contador.textContent = registros.length + " registro(s)";
+  }
+
+  /* ---- Filtro en tiempo real por cualquier campo de texto ---- */
+  document.getElementById("filtro").addEventListener("input", (e) => {
+    const termino = e.target.value.trim().toLowerCase();
+    if (!termino) {
+      renderizarTabla(todosLosRegistros);
+      return;
+    }
+    const filtrados = todosLosRegistros.filter(r =>
+      Object.values(r).some(v => String(v).toLowerCase().includes(termino))
+    );
+    renderizarTabla(filtrados);
+  });
+
+  /* ---- Botón Actualizar ---- */
+  document.getElementById("btnActualizar").addEventListener("click", () => {
+    document.getElementById("filtro").value = "";
+    cargarRegistros();
+  });
+
+  /* ---- Botón Imprimir / PDF ----
+     Usa window.print() que en Chrome/Edge permite guardar como PDF.
+     El CSS @media print oculta todo excepto la tabla. */
+  document.getElementById("btnImprimir").addEventListener("click", () => {
+    // Actualizar el subtítulo de impresión con el usuario y la fecha actual
+    const ahora = new Date().toLocaleString("es-GT");
+    const quien = esAdmin ? "Todos los registros" : "Registros de " + sesion.nombre;
+    document.getElementById("printSubtitle").textContent =
+      quien + " · Generado el " + ahora;
+    window.print();
+  });
+
+  // Cargar los registros al entrar a la página
+  cargarRegistros();
+</script>
+
+</body>
+</html>
