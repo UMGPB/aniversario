@@ -100,6 +100,7 @@
           <option value="Docente">Docente</option>
           <option value="Particular">Particular</option>
           <option value="Cortesía">Cortesía</option>
+          <option value="Candidata">Candidata</option>
         </select>
       </div>
 
@@ -220,15 +221,14 @@
   document.getElementById("btnLimpiar").addEventListener("click", limpiarFormulario);
 
   // Cambio dinámico del costo según la categoría seleccionada:
-  // Cortesía → Q0.00 (sin costo), cualquier otra → Q250.00
+  // Cortesía y Candidata → Q0.00 (sin costo), cualquier otra → Q250.00
   document.getElementById("categoria").addEventListener("change", (e) => {
-    const esCortesia = e.target.value === "Cortesía";
-    document.getElementById("costoDisplay").textContent = esCortesia ? "Q0.00" : "Q250.00";
-    document.getElementById("costoLabel").textContent   = esCortesia ? "Sin costo (cortesía)" : "Valor fijo por brazalete";
-    // Cambiamos el color del costo para distinguir visualmente
-    document.getElementById("costoDisplay").style.color = esCortesia ? "var(--text-muted)" : "";
-    document.getElementById("costoBox").style.background = esCortesia ? "#F3F4F8" : "";
-    document.getElementById("costoBox").style.borderColor = esCortesia ? "var(--border-soft)" : "";
+    const esSinCosto = e.target.value === "Cortesía" || e.target.value === "Candidata";
+    document.getElementById("costoDisplay").textContent = esSinCosto ? "Q0.00" : "Q250.00";
+    document.getElementById("costoLabel").textContent   = esSinCosto ? "Sin costo (" + e.target.value.toLowerCase() + ")" : "Valor fijo por brazalete";
+    document.getElementById("costoDisplay").style.color  = esSinCosto ? "var(--text-muted)" : "";
+    document.getElementById("costoBox").style.background  = esSinCosto ? "#F3F4F8" : "";
+    document.getElementById("costoBox").style.borderColor = esSinCosto ? "var(--border-soft)" : "";
   });
 
   // Botón "Salir": cierra sesión y regresa al login
