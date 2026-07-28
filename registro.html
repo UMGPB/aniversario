@@ -118,7 +118,7 @@
       <div class="field">
         <label>Costo</label>
         <!-- El costo cambia automáticamente según la categoría:
-             Q250.00 para Estudiante/Docente/Particular, Q0.00 para Cortesía -->
+             Q250.00 para Estudiante/Docente/Particular, Q0.00 para Cortesía/Candidata -->
         <div class="costo-box" id="costoBox">
           <span class="costo-fijo" id="costoDisplay">Q250.00</span>
           <span style="font-size:0.78rem; color: var(--text-muted);" id="costoLabel">Valor fijo por brazalete</span>
@@ -208,7 +208,7 @@
     formVenta.reset();
     alertaForm.classList.remove("show");
     alertaFormOk.classList.remove("show");
-    // Restaurar el costo a Q250.00 al limpiar (por si venía de Cortesía)
+    // Restaurar el costo a Q250.00 al limpiar (por si venía de Cortesía/Candidata)
     document.getElementById("costoDisplay").textContent = "Q250.00";
     document.getElementById("costoLabel").textContent   = "Valor fijo por brazalete";
     document.getElementById("costoDisplay").style.color = "";
