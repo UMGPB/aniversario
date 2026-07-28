@@ -250,12 +250,19 @@
   const resultadoFinal = document.getElementById("resultadoFinal");
   const placeholderGanador = document.getElementById("placeholderGanador");
 
-  // Cargamos la lista de brazaletes con check-in confirmado al entrar a la página
+  // Cargamos la lista de brazaletes con check-in confirmado al entrar a la página.
+  // Se excluyen automáticamente los de categoría "Cortesía" ya que no participan en el sorteo.
   async function cargarElegibles() {
     const resultado = await llamarAPI("obtenerBrazaletesConCheckin");
     if (resultado.ok) {
-      elegibles = resultado.elegibles;
-      contadorElegibles.textContent = elegibles.length + " participante(s) con check-in confirmado";
+      // Filtrar: excluir categoría Cortesía del sorteo
+      const sinCortesia = resultado.elegibles.filter(
+        e => String(e.categoria).trim().toLowerCase() !== "cortesía"
+      );
+      elegibles = sinCortesia;
+      const excluidos = resultado.elegibles.length - sinCortesia.length;
+      contadorElegibles.textContent = elegibles.length + " participante(s) elegibles" +
+        (excluidos > 0 ? " (" + excluidos + " cortesía excluida" + (excluidos > 1 ? "s" : "") + ")" : "");
       btnSortear.disabled = elegibles.length === 0;
     } else {
       contadorElegibles.textContent = "";

@@ -99,6 +99,7 @@
           <option value="Estudiante">Estudiante</option>
           <option value="Docente">Docente</option>
           <option value="Particular">Particular</option>
+          <option value="Cortesía">Cortesía</option>
         </select>
       </div>
 
@@ -115,9 +116,11 @@
 
       <div class="field">
         <label>Costo</label>
-        <div class="costo-box">
-          <span class="costo-fijo">Q250.00</span>
-          <span style="font-size:0.78rem; color: var(--text-muted);">Valor fijo por brazalete</span>
+        <!-- El costo cambia automáticamente según la categoría:
+             Q250.00 para Estudiante/Docente/Particular, Q0.00 para Cortesía -->
+        <div class="costo-box" id="costoBox">
+          <span class="costo-fijo" id="costoDisplay">Q250.00</span>
+          <span style="font-size:0.78rem; color: var(--text-muted);" id="costoLabel">Valor fijo por brazalete</span>
         </div>
       </div>
 
@@ -204,11 +207,29 @@
     formVenta.reset();
     alertaForm.classList.remove("show");
     alertaFormOk.classList.remove("show");
+    // Restaurar el costo a Q250.00 al limpiar (por si venía de Cortesía)
+    document.getElementById("costoDisplay").textContent = "Q250.00";
+    document.getElementById("costoLabel").textContent   = "Valor fijo por brazalete";
+    document.getElementById("costoDisplay").style.color = "";
+    document.getElementById("costoBox").style.background  = "";
+    document.getElementById("costoBox").style.borderColor = "";
     document.getElementById("brazalete").focus();
   }
 
   // Botón "Limpiar": vacía el formulario sin guardar nada
   document.getElementById("btnLimpiar").addEventListener("click", limpiarFormulario);
+
+  // Cambio dinámico del costo según la categoría seleccionada:
+  // Cortesía → Q0.00 (sin costo), cualquier otra → Q250.00
+  document.getElementById("categoria").addEventListener("change", (e) => {
+    const esCortesia = e.target.value === "Cortesía";
+    document.getElementById("costoDisplay").textContent = esCortesia ? "Q0.00" : "Q250.00";
+    document.getElementById("costoLabel").textContent   = esCortesia ? "Sin costo (cortesía)" : "Valor fijo por brazalete";
+    // Cambiamos el color del costo para distinguir visualmente
+    document.getElementById("costoDisplay").style.color = esCortesia ? "var(--text-muted)" : "";
+    document.getElementById("costoBox").style.background = esCortesia ? "#F3F4F8" : "";
+    document.getElementById("costoBox").style.borderColor = esCortesia ? "var(--border-soft)" : "";
+  });
 
   // Botón "Salir": cierra sesión y regresa al login
   document.getElementById("btnSalirForm").addEventListener("click", cerrarSesion);
