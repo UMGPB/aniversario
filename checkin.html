@@ -51,6 +51,86 @@
     font-size: 0.78rem;
     margin-top: 10px;
   }
+
+  /* ---- Bloque de brazalete extraviado ---- */
+  .extraviado-wrap {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #FBF6EA;
+    border: 1.5px solid var(--gold-500);
+    display: none; /* se muestra solo si el checkbox de extraviado está marcado */
+  }
+  .extraviado-wrap.show { display: block; }
+
+  /* Estilo del checkbox de extraviado y justificación */
+  .check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--navy-700);
+    cursor: pointer;
+    margin-bottom: 4px;
+  }
+  .check-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--gold-500);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .check-sublabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .check-sublabel input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--navy-700);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Selector DPI / Carnet + input de ingreso */
+  .doc-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .doc-row select {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-soft);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--text-main);
+    background: #FBFCFE;
+    flex-shrink: 0;
+  }
+  .doc-row input[type="text"] {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-soft);
+    font-size: 0.88rem;
+    font-family: var(--font-body);
+    color: var(--text-main);
+    background: #FBFCFE;
+    min-width: 140px;
+  }
+  .doc-row select:focus, .doc-row input:focus {
+    outline: none;
+    border-color: var(--gold-500);
+    box-shadow: 0 0 0 3px rgba(201,162,75,0.18);
+  }
 </style>
 </head>
 <body>
@@ -113,6 +193,40 @@
 
       <div id="yaCheckinBadge" class="ya-checkin-badge" style="display:none;"></div>
 
+      <!-- ══════════════════════════════════════════════════
+           BLOQUE DE BRAZALETE EXTRAVIADO
+           Se muestra solo si el usuario marca el checkbox.
+           Guarda en col J (extraviado), K (DPI/Carnet), L (justificación)
+           ══════════════════════════════════════════════════ -->
+      <div style="margin-top:14px;">
+        <label class="check-label">
+          <input type="checkbox" id="chkExtraviado" />
+          🔍 Brazalete extraviado
+        </label>
+      </div>
+
+      <!-- Panel que se despliega al marcar "Brazalete extraviado" -->
+      <div class="extraviado-wrap" id="extraviadoWrap">
+        <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px;">
+          Complete los datos de identificación del asistente:
+        </div>
+
+        <!-- Selector tipo documento + campo de ingreso -->
+        <div class="doc-row">
+          <select id="tipoDoc">
+            <option value="DPI">DPI</option>
+            <option value="Carnet UMG">Carnet UMG</option>
+          </select>
+          <input type="text" id="numDoc" placeholder="Ingrese el número..." />
+        </div>
+
+        <!-- Checkbox de justificación -->
+        <label class="check-sublabel">
+          <input type="checkbox" id="chkJustificacion" />
+          Presentó justificación
+        </label>
+      </div>
+
       <div class="btn-row">
         <button class="btn btn-gold" id="btnConfirmar">✅ Confirmar check-in</button>
       </div>
@@ -131,19 +245,43 @@
   const sesion = requerirSesion(["check-in", "checkin", "admin"]);
   if (sesion) pintarHeaderUsuario(sesion);
 
-  const alertaBusqueda = document.getElementById("alertaBusqueda");
-  const alertaCheckin = document.getElementById("alertaCheckin");
-  const resultadoBox = document.getElementById("resultadoBox");
-  const btnConfirmar = document.getElementById("btnConfirmar");
-  const yaCheckinBadge = document.getElementById("yaCheckinBadge");
+  const alertaBusqueda  = document.getElementById("alertaBusqueda");
+  const alertaCheckin   = document.getElementById("alertaCheckin");
+  const resultadoBox    = document.getElementById("resultadoBox");
+  const btnConfirmar    = document.getElementById("btnConfirmar");
+  const yaCheckinBadge  = document.getElementById("yaCheckinBadge");
+  const chkExtraviado   = document.getElementById("chkExtraviado");
+  const extraviadoWrap  = document.getElementById("extraviadoWrap");
 
   let brazaleteActual = null;
-  let yaTieneCheckin = false;
+  let yaTieneCheckin  = false;
+
+  // Mostrar/ocultar el panel de extraviado según el checkbox
+  chkExtraviado.addEventListener("change", () => {
+    if (chkExtraviado.checked) {
+      extraviadoWrap.classList.add("show");
+      document.getElementById("numDoc").focus();
+    } else {
+      extraviadoWrap.classList.remove("show");
+      // Limpiar campos al desmarcar
+      document.getElementById("numDoc").value = "";
+      document.getElementById("chkJustificacion").checked = false;
+    }
+  });
+
+  // Función que limpia el estado del bloque extraviado al hacer nueva búsqueda
+  function resetExtraviado() {
+    chkExtraviado.checked = false;
+    extraviadoWrap.classList.remove("show");
+    document.getElementById("numDoc").value = "";
+    document.getElementById("chkJustificacion").checked = false;
+  }
 
   async function buscar() {
     alertaBusqueda.classList.remove("show");
     alertaCheckin.classList.remove("show");
     resultadoBox.classList.remove("show");
+    resetExtraviado(); // limpiar extraviado en cada nueva búsqueda
 
     const numero = document.getElementById("brazaleteBuscar").value.trim();
     if (!numero) {
@@ -168,13 +306,13 @@
     }
 
     // Pintamos los datos encontrados
-    document.getElementById("resBrazalete").textContent = resultado.brazalete;
-    document.getElementById("resNombre").textContent = resultado.nombre;
-    document.getElementById("resCategoria").textContent = resultado.categoria;
-    document.getElementById("resFacultad").textContent = resultado.facultad;
+    document.getElementById("resBrazalete").textContent  = resultado.brazalete;
+    document.getElementById("resNombre").textContent     = resultado.nombre;
+    document.getElementById("resCategoria").textContent  = resultado.categoria;
+    document.getElementById("resFacultad").textContent   = resultado.facultad;
 
     brazaleteActual = resultado.brazalete;
-    yaTieneCheckin = resultado.yaTieneCheckin;
+    yaTieneCheckin  = resultado.yaTieneCheckin;
 
     if (yaTieneCheckin) {
       yaCheckinBadge.style.display = "inline-block";
@@ -197,19 +335,40 @@
   btnConfirmar.addEventListener("click", async () => {
     if (!brazaleteActual || yaTieneCheckin) return;
 
+    // Si marcó "Brazalete extraviado", validar que haya ingresado el número de documento
+    const extraviado = chkExtraviado.checked;
+    if (extraviado && !document.getElementById("numDoc").value.trim()) {
+      alertaBusqueda.textContent = "Ingresa el número de DPI o Carnet UMG del asistente.";
+      alertaBusqueda.classList.add("show");
+      return;
+    }
+
     btnConfirmar.disabled = true;
     btnConfirmar.innerHTML = '<span class="loader"></span> Confirmando...';
 
+    // Preparar datos del extraviado (solo se envían si el checkbox está marcado)
+    const datosExtraviado = extraviado ? {
+      extraviado:     true,
+      tipoDoc:        document.getElementById("tipoDoc").value,
+      numDoc:         document.getElementById("numDoc").value.trim(),
+      justificacion:  document.getElementById("chkJustificacion").checked ? "Sí" : "No"
+    } : {
+      extraviado: false
+    };
+
     const resultado = await llamarAPI("confirmarCheckin", {
-      numero: brazaleteActual,
-      registrador: sesion.nombre
+      numero:       brazaleteActual,
+      registrador:  sesion.nombre,
+      ...datosExtraviado  // agrega extraviado, tipoDoc, numDoc, justificacion
     });
 
     if (resultado.ok) {
-      alertaCheckin.textContent = "✅ Check-in confirmado a las " + resultado.fechaHora + ".";
+      const msgExtra = extraviado ? " (brazalete extraviado registrado)" : "";
+      alertaCheckin.textContent = "✅ Check-in confirmado a las " + resultado.fechaHora + msgExtra + ".";
       alertaCheckin.classList.add("show");
       resultadoBox.classList.remove("show");
       document.getElementById("brazaleteBuscar").value = "";
+      resetExtraviado();
     } else {
       alertaBusqueda.textContent = resultado.error || "No se pudo confirmar el check-in.";
       alertaBusqueda.classList.add("show");
