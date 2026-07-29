@@ -65,11 +65,12 @@
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0;">Desglose por categoría</h2>
+    <h2 style="margin-top:0;">Desglose por facultad y categoría</h2>
     <div id="tablaWrap">
       <table class="data-table">
         <thead>
           <tr>
+            <th>Facultad</th>
             <th>Categoría</th>
             <th>Tickets vendidos</th>
             <th>Check-in</th>
@@ -144,7 +145,8 @@
 
     tablaBody.innerHTML = resultado.desglose.map(fila => `
       <tr>
-        <td>${fila.categoria}</td>
+        <td>${fila.facultad || '—'}</td>
+        <td>${fila.categoria || '—'}</td>
         <td>${fila.vendidos}</td>
         <td>${fila.checkin}</td>
         <td>
