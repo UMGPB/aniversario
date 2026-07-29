@@ -30,6 +30,8 @@
     padding: 40px 20px;
     color: var(--text-muted);
   }
+  /* Desactivar el hover genérico de la tabla para que no pise los colores por facultad */
+  #tablaBody tr:hover td { background: inherit !important; }
 </style>
 </head>
 <body>
@@ -143,22 +145,44 @@
     }
     estadoVacio.style.display = "none";
 
-    tablaBody.innerHTML = resultado.desglose.map(fila => `
-      <tr>
-        <td>${fila.facultad || '—'}</td>
-        <td>${fila.categoria || '—'}</td>
-        <td>${fila.vendidos}</td>
-        <td>${fila.checkin}</td>
-        <td>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <div class="pct-bar-bg" style="max-width:90px;">
-              <div class="pct-bar-fill" style="width:${fila.porcentaje}%;"></div>
+    tablaBody.innerHTML = resultado.desglose.map(fila => {
+      // Mapa de colores por facultad — un tono suave distinto para cada una.
+      // Las facultades sin color asignado (Docente, Particular, etc.) usan blanco.
+      const coloresFacultad = {
+        "Administración Sábado":  "#FFE1BC",
+        "Administración Domingo": "#FFDDB3",
+        "Criminología":           "#E8F5E9",
+        "Derecho Domingo":        "#FFE2E2",
+        "Derecho Sábado":         "#FECDD3",
+        "Enfermería":             "#E0F2FE",
+        "Hotelería":              "#FEF9C3",
+        "Ingeniería en Sistemas": "#EDE9FE",
+        "Ingeniería Industrial":  "#DBEAFE",
+        "Psicología":             "#FCE7F3",
+        "Trabajo Social":         "#D1FAE5",
+        "Docente":                "#F3F4F6",
+        "Particular":             "#F9FAFB",
+        "Candidata":              "#FFF7ED",
+        "Cortesía":               "#F0FDF4"
+      };
+      const bgColor = coloresFacultad[fila.facultad] || coloresFacultad[fila.categoria] || "#FFFFFF";
+
+      return `
+        <tr style="background-color:${bgColor};">
+          <td>${fila.facultad || '—'}</td>
+          <td>${fila.categoria || '—'}</td>
+          <td>${fila.vendidos}</td>
+          <td>${fila.checkin}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="pct-bar-bg" style="max-width:90px;">
+                <div class="pct-bar-fill" style="width:${fila.porcentaje}%;"></div>
+              </div>
+              <span>${fila.porcentaje}%</span>
             </div>
-            <span>${fila.porcentaje}%</span>
-          </div>
-        </td>
-      </tr>
-    `).join("");
+          </td>
+        </tr>`;
+    }).join("");
   }
 
   document.getElementById("btnActualizar").addEventListener("click", cargarResumen);
