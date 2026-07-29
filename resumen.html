@@ -145,30 +145,24 @@
     }
     estadoVacio.style.display = "none";
 
+    // Alternancia de color por grupo de facultad:
+    // cada vez que cambia la facultad se alterna entre blanco y gris suave.
+    // Así todas las filas de la misma facultad comparten el mismo fondo,
+    // y el contraste entre grupos hace fácil distinguirlos visualmente.
+    let facultadAnterior = null;
+    let colorActual = "#FFFFFF";
+    const COLOR_A = "#FFFFFF";         // blanco
+    const COLOR_B = "#F0F2F7";         // gris suave (mismo que el fondo general de la app)
+
     tablaBody.innerHTML = resultado.desglose.map(fila => {
-      // Mapa de colores por facultad — un tono suave distinto para cada una.
-      // Las facultades sin color asignado (Docente, Particular, etc.) usan blanco.
-      const coloresFacultad = {
-        "Administración Sábado":  "#FFE1BC",
-        "Administración Domingo": "#FFDDB3",
-        "Criminología":           "#E8F5E9",
-        "Derecho Domingo":        "#FFE2E2",
-        "Derecho Sábado":         "#FECDD3",
-        "Enfermería":             "#E0F2FE",
-        "Hotelería":              "#FEF9C3",
-        "Ingeniería en Sistemas": "#EDE9FE",
-        "Ingeniería Industrial":  "#DBEAFE",
-        "Psicología":             "#FCE7F3",
-        "Trabajo Social":         "#D1FAE5",
-        "Docente":                "#F3F4F6",
-        "Particular":             "#F9FAFB",
-        "Candidata":              "#FFF7ED",
-        "Cortesía":               "#F0FDF4"
-      };
-      const bgColor = coloresFacultad[fila.facultad] || coloresFacultad[fila.categoria] || "#FFFFFF";
+      // Cambiar color solo cuando cambia la facultad
+      if (fila.facultad !== facultadAnterior) {
+        colorActual = (colorActual === COLOR_A) ? COLOR_B : COLOR_A;
+        facultadAnterior = fila.facultad;
+      }
 
       return `
-        <tr style="background-color:${bgColor};">
+        <tr style="background-color:${colorActual};">
           <td>${fila.facultad || '—'}</td>
           <td>${fila.categoria || '—'}</td>
           <td>${fila.vendidos}</td>
