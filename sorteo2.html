@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sorteo · Aniversario UMG 2026</title>
+   <!-- Icono de la pestaña -->
+  <link rel="icon" type="image/png" href="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  /* Layout de dos columnas: ruleta a la izquierda, panel de ganador a la derecha.
+     En pantallas angostas se apilan verticalmente (ruleta arriba, ganador abajo). */
+  .sorteo-shell {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .sorteo-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .sorteo-header .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.78rem;
+    color: var(--gold-500);
+    font-weight: 700;
+  }
+  .sorteo-header h1 { margin: 6px 0 0; }
+
+  .sorteo-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+    align-items: stretch;
+    margin-top: 24px;
+  }
+  @media (max-width: 760px) {
+    .sorteo-grid { grid-template-columns: 1fr; }
+  }
+
+  .panel-ruleta, .panel-ganador {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---- Ruleta de dígitos (3 rodillos: centenas / decenas / unidades) ---- */
+  .ruleta-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 10px 0;
+  }
+  .rodillo {
+    width: 88px;
+    height: 124px;
+    background: linear-gradient(180deg, var(--navy-900), var(--navy-700));
+    border: 2px solid var(--gold-500);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(11,27,58,0.25);
+  }
+  .rodillo .franja {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rodillo .digito {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--gold-300);
+    line-height: 1;
+  }
+  /* Brillo superior/inferior tipo "máquina tragamonedas" */
+  .rodillo::before, .rodillo::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 30px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .rodillo::before { top: 0; background: linear-gradient(180deg, rgba(11,27,58,0.9), transparent); }
+  .rodillo::after { bottom: 0; background: linear-gradient(0deg, rgba(11,27,58,0.9), transparent); }
+
+  .rodillo.girando .digito {
+    animation: girar 0.08s linear infinite;
+  }
+  @keyframes girar {
+    0% { transform: translateY(-6px); opacity: 0.6; }
+    50% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0.6; }
+  }
+  .rodillo.detenido {
+    border-color: var(--gold-300);
+    box-shadow: 0 0 0 4px rgba(201,162,75,0.25), 0 10px 30px rgba(11,27,58,0.25);
+  }
+
+  .ganador-label {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
+
+  .contador-elegibles {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  /* ---- Panel derecho: resultado del ganador ---- */
+  .panel-ganador {
+    background: linear-gradient(160deg, #FBF6EA, #FFFFFF);
+    border: 1.5px solid var(--gold-500);
+    border-radius: 16px;
+    padding: 26px 22px;
+    min-height: 260px;
+  }
+  .panel-ganador .placeholder-icon {
+    font-size: 2.4rem;
+    opacity: 0.5;
+  }
+  .panel-ganador .placeholder-text {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-top: 8px;
+  }
+  .resultado-final { display: none; }
+  .resultado-final.show { display: block; }
+  .resultado-final .nombre-ganador {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    color: var(--navy-900);
+    margin: 8px 0 6px;
+  }
+  .resultado-final .detalle-ganador {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .acciones-sorteo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin-top: 18px;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <!-- <img src="https://i.ibb.co/TMbzPJvp/LOGO-UMG.png" alt="Logo UMG" /> -->
+        <img src="https://i.ibb.co/gZzdHfR0/55-a-os-UMG-pb-sticker.png" style="height:60px;width:auto;background:transparent;" alt="Logo UMGPB 55a" /> <!--sin fondo sticker-->    
+    <div class="brand-text">
+      <h1>Aniversario UMG 2026</h1>
+      <span>Sorteo de brazaletes</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="user-box">
+      <strong id="headerNombre">—</strong>
+      <span class="rol-tag" id="headerRol">—</span>
+    </div>
+    <button class="icon-btn" id="btnSalir">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div style="margin-bottom:14px;"><a href="index.html" style="color:var(--navy-700); font-size:0.85rem; text-decoration:none;">← Volver al menú</a></div>
+
+  <div class="card sorteo-shell">
+    <div class="sorteo-header">
+      <div class="eyebrow">Solo asistentes con check-in confirmado</div>
+      <h1>Gran sorteo</h1>
+      <div class="contador-elegibles" id="contadorElegibles">Cargando participantes...</div>
+      <div id="alertaSorteo" class="alert alert-error"></div>
+    </div>
+
+    <div class="sorteo-grid">
+      <!-- Columna izquierda: la ruleta de números -->
+      <div class="panel-ruleta">
+        <!-- Tres rodillos: centenas, decenas, unidades -->
+        <div class="ruleta-wrap">
+          <div class="rodillo" id="rodillo0"><div class="franja"><span class="digito">0</span></div></div>
+          <div class="rodillo" id="rodillo1"><div class="franja"><span class="digito">0</span></div></div>
+          <div class="rodillo" id="rodillo2"><div class="franja"><span class="digito">0</span></div></div>
+        </div>
+        <div class="ganador-label">No. de brazalete ganador</div>
+
+        <div class="acciones-sorteo">
+          <!-- Checkbox para excluir ganadores anteriores SOLO en esta sesión.
+               Si el usuario cierra y vuelve a entrar, se reinicia automáticamente
+               porque ganadoresEnSesion vive solo en memoria (no en localStorage). -->
+          <label style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:7px; cursor:pointer; width:100%;">
+            <input type="checkbox" id="chkExcluirGanadores" style="width:15px;height:15px;accent-color:var(--gold-500); flex-shrink:0;" />
+            Excluir ganadores ya sorteados en esta sesión
+          </label>
+          <button class="btn btn-gold" id="btnSortear" style="font-size:1.05rem; padding:14px 32px; width:100%;">
+            🎉 Sortear
+          </button>
+          <!-- Este botón aparece deshabilitado hasta que la ruleta termine de girar -->
+          <button class="btn btn-primary" id="btnRevelar" style="font-size:1.0rem; padding:13px 32px; width:100%;" disabled>
+            🏆 Revelar ganador
+          </button>
+        </div>
+      </div>
+
+      <!-- Columna derecha: panel donde aparece el ganador -->
+      <div class="panel-ganador">
+        <div id="placeholderGanador">
+          <div class="placeholder-icon">🎊</div>
+         <!--  <div class="placeholder-text">Aquí aparecerá el ganador después de sortear y revelar.</div> -->
+           <div class="placeholder-text">Y el ganador es...</div>
+        </div>
+
+        <div class="resultado-final" id="resultadoFinal">
+          <div class="ganador-label">¡Tenemos ganador!</div>
+          <div class="nombre-ganador" id="ganadorNombre">—</div>
+          <div class="detalle-ganador" id="ganadorDetalle">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="app-footer">
+  · Universidad Mariano Gálvez · Puerto Barrios, Izabal
+  <div class="signature">© M.A. Inga. Delmy Valiente</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Solo el rol sorteo (y admin) puede acceder
+  const sesion = requerirSesion(["sorteo", "admin"]);
+  if (sesion) pintarHeaderUsuario(sesion);
+
+  let elegibles = [];
+  let ganadorActual = null; // se guarda aquí mientras se espera el clic de "Revelar"
+  // Lista de brazaletes ganadores en esta sesión.
+  // Se reinicia automáticamente al cerrar/reabrir porque vive solo en memoria.
+  const ganadoresEnSesion = [];
+
+  const btnSortear        = document.getElementById("btnSortear");
+  const btnRevelar        = document.getElementById("btnRevelar");
+  const contadorElegibles = document.getElementById("contadorElegibles");
+  const alertaSorteo      = document.getElementById("alertaSorteo");
+  const resultadoFinal    = document.getElementById("resultadoFinal");
+  const placeholderGanador = document.getElementById("placeholderGanador");
+  const chkExcluir        = document.getElementById("chkExcluirGanadores");
+
+  // Cargamos la lista de brazaletes con check-in confirmado al entrar a la página.
+  // Se excluyen automáticamente los de categoría "Cortesía" ya que no participan en el sorteo.
+  async function cargarElegibles() {
+    const resultado = await llamarAPI("obtenerBrazaletesConCheckin");
+    if (resultado.ok) {
+      // Filtrar: excluir categoría Cortesía del sorteo
+      const sinCortesia = resultado.elegibles.filter(
+        e => String(e.categoria).trim().toLowerCase() !== "cortesía"
+      );
+      elegibles = sinCortesia;
+      const excluidos = resultado.elegibles.length - sinCortesia.length;
+      contadorElegibles.textContent = elegibles.length + " participante(s) elegibles" +
+        (excluidos > 0 ? " (" + excluidos + " cortesía excluida" + (excluidos > 1 ? "s" : "") + ")" : "");
+      btnSortear.disabled = elegibles.length === 0;
+    } else {
+      contadorElegibles.textContent = "";
+      alertaSorteo.textContent = resultado.error || "No se pudo cargar la lista de participantes.";
+      alertaSorteo.classList.add("show");
+      btnSortear.disabled = true;
+    }
+  }
+  cargarElegibles();
+
+  /**
+   * Anima un solo rodillo (dígito) mostrando números aleatorios rápidos
+   * y luego se detiene exactamente en el dígito final indicado.
+   * Se usa una Promise para poder encadenar el frenado escalonado:
+   * primero centenas, luego decenas, luego unidades.
+   */
+  function girarRodillo(idRodillo, digitoFinal, duracionMs) {
+    return new Promise((resolve) => {
+      const rodillo = document.getElementById(idRodillo);
+      const span = rodillo.querySelector(".digito");
+      rodillo.classList.add("girando");
+      rodillo.classList.remove("detenido");
+
+      const intervalo = setInterval(() => {
+        span.textContent = Math.floor(Math.random() * 10);
+      }, 60);
+
+      setTimeout(() => {
+        clearInterval(intervalo);
+        span.textContent = digitoFinal;
+        rodillo.classList.remove("girando");
+        rodillo.classList.add("detenido");
+        resolve();
+      }, duracionMs);
+    });
+  }
+
+  // Botón "Sortear": gira la ruleta y se detiene en el número ganador,
+  // pero NO muestra todavía el nombre/categoría/facultad — eso queda
+  // para el botón "Revelar ganador", como segundo momento de suspenso.
+  btnSortear.addEventListener("click", async () => {
+    if (elegibles.length === 0) return;
+
+    // Si el checkbox está marcado, filtrar los ya sorteados en esta sesión
+    const pool = chkExcluir.checked
+      ? elegibles.filter(e => !ganadoresEnSesion.includes(e.brazalete))
+      : elegibles;
+
+    // Si ya se sortearon todos y el checkbox está marcado, avisar
+    if (pool.length === 0) {
+      alertaSorteo.textContent = "Todos los participantes ya fueron sorteados en esta sesión. Desmarca la opción para incluirlos de nuevo.";
+      alertaSorteo.classList.add("show");
+      return;
+    }
+    alertaSorteo.classList.remove("show");
+
+    btnSortear.disabled = true;
+    btnRevelar.disabled = true;
+    // Limpiar panel derecho al iniciar nuevo sorteo para no mostrar ganador anterior
+    resultadoFinal.classList.remove("show");
+    placeholderGanador.style.display = "block";
+    placeholderGanador.querySelector(".placeholder-text").textContent = "Girando... 🎰";
+
+    // Elegimos al ganador del pool activo (azar uniforme) y lo guardamos
+    // para usarlo cuando se haga clic en "Revelar ganador"
+    const indiceGanador = Math.floor(Math.random() * pool.length);
+    ganadorActual = pool[indiceGanador];
+
+    // Limpiar apóstrofe que Sheets agrega para preservar ceros (ej. '001 → 001)
+    const numeroBruto = String(ganadorActual.brazalete).replace(/'/g, "").trim();
+    const numeroFormateado = numeroBruto.padStart(3, "0");
+    const [centenas, decenas, unidades] = numeroFormateado.split("");
+
+    // Frenado escalonado: cada rodillo gira más tiempo que el anterior,
+    // así se detienen en secuencia (izquierda → centro → derecha) y se
+    // estira el suspenso como pediste.
+    await girarRodillo("rodillo0", centenas, 1400); // centenas se detiene primero
+    await girarRodillo("rodillo1", decenas, 1400);  // luego decenas
+    await girarRodillo("rodillo2", unidades, 1600); // unidades al final, con un poco más de suspenso
+
+    btnSortear.disabled = false;
+    btnSortear.innerHTML = "🎉 Sortear de nuevo";
+    btnRevelar.disabled = false; // ya se puede revelar al ganador
+  });
+
+  // Botón "Revelar ganador": muestra nombre, categoría y facultad del
+  // ganador ya elegido por "Sortear". Se separa en dos pasos para crear
+  // un segundo momento de suspenso antes de mostrar la identidad.
+  btnRevelar.addEventListener("click", () => {
+    if (!ganadorActual) return;
+
+    // Limpiar apóstrofe también aquí por consistencia
+    const numeroBruto = String(ganadorActual.brazalete).replace(/'/g, "").trim();
+    const numeroFormateado = numeroBruto.padStart(3, "0");
+
+    placeholderGanador.style.display = "none";
+    document.getElementById("ganadorNombre").textContent = ganadorActual.nombre;
+    document.getElementById("ganadorDetalle").textContent =
+      "Brazalete N° " + numeroFormateado + " · " + ganadorActual.categoria + " · " + ganadorActual.facultad;
+    resultadoFinal.classList.add("show");
+
+    // Registrar este ganador en la lista de sesión para excluirlo en sorteos posteriores
+    // si el checkbox está marcado. El registro ocurre al revelar (no al sortear)
+    // para que el usuario confirme quién ganó antes de excluirlo.
+    if (!ganadoresEnSesion.includes(ganadorActual.brazalete)) {
+      ganadoresEnSesion.push(ganadorActual.brazalete);
+    }
+
+    btnRevelar.disabled = true; // ya se reveló; para un nuevo ganador hay que volver a sortear
+  });
+</script>
+
+</body>
+</html>
